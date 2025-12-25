@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桌面 Widget 编辑器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-palette"></i> 桌面Widget编辑器</h1>
+            <div class="header-controls">
+                <button class="btn btn-secondary" id="toggleGuides">
+                    <i class="fas fa-border-all"></i> 辅助线 : <span id="guideStatus">显示</span>
+                </button>
+                <button class="btn btn-primary" id="exportBtn">
+                    <i class="fas fa-file-export"></i> 导出配置
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 左侧工具栏 -->
+            <div class="toolbar">
+                <div class="tool-section">
+                    <div class="section-title">
+                        <i class="fas fa-th-large"></i> 快速模板
+                    </div>
+                    <div class="templates">
+                        <div class="template template-4x2 selected" data-template="4x2">
+                            <div class="template-grid">
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                            </div>
+                            <div class="template-label">4×2</div>
+                        </div>
+                        <div class="template template-2x2" data-template="2x2">
+                            <div class="template-grid">
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                            </div>
+                            <div class="template-label">2×2</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tool-section materials-section">
+                    <!-- 素材和文字分类 -->
+                    <div class="materials-category">
+                        <div class="section-title">
+                            <i class="fas fa-shapes"></i> 导入素材 | 文字
+                        </div>
+                        <div class="materials">
+                            <div class="material material-upload" id="uploadMaterialBtn">
+                                <i class="fas fa-plus"></i>
+                                <input type="file" id="uploadMaterial" accept=".png,.svg,.jpg,.jpeg,.gif,image/*">
+                            </div>
+                            <div class="material" id="addTextBtn">
+                                <i class="fas fa-font"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 模块分类 -->
+                    <div class="materials-category">
+                        <div class="section-title">
+                            <i class="fas fa-cube"></i> 组件
+                        </div>
+                        <div class="materials">
+                            <div class="material" id="addClockBtn" data-module="clock" title="时钟">
+                                <i class="fas fa-user-clock"></i>
+                            </div>
+                            <div class="material" id="addAnalogClockBtn" data-module="analog_clock" title="指针时钟">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="material" id="addWeatherBtn" data-module="weather" title="天气">
+                                <i class="fas fa-cloud-sun"></i>
+                            </div>
+                            <div class="material" id="addCalendarBtn" data-module="calendar" title="日历">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="material" id="addWeekBtn" data-module="week" title="星期">
+                                <i class="fas fa-calendar-week"></i>
+                            </div>
+                            <div class="material" id="addBatteryBtn" data-module="battery" title="电池">
+                                <i class="fas fa-battery-full"></i>
+                            </div>
+                            <div class="material" id="addCountdownBtn" data-module="countdown" title="倒计时">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                            <div class="material" id="addMemoryBtn" data-module="memory" title="内存">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <div class="material" id="addTodayLengthBtn" data-module="today-length" title="今日已过去">
+                                <i class="fas fa-history"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 形状分类 -->
+                    <div class="materials-category">
+                        <div class="section-title">
+                            <i class="fas fa-draw-polygon"></i> 形状
+                        </div>
+                        <div class="materials">
+                            <div class="material" id="addCircleBtn" data-shape="circle" title="圆形">
+                                <div class="shape-preview">
+                                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="200" height="200" rx="100" fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addCapsuleBtn" data-shape="capsule" title="胶囊型">
+                                <div class="shape-preview">
+                                    <svg width="250" height="100" viewBox="0 0 250 100" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="250" height="100" rx="50" fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addRectangleSharpBtn" data-shape="rectangle" title="矩形">
+                                <div class="shape-preview">
+                                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="200" height="200" fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addRectangleBtn" data-shape="rounded-rectangle" title="圆角矩形">
+                                <div class="shape-preview">
+                                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="200" height="200" rx="40" fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addRectangleLongBtn" data-shape="rectangle-long" title="长方形">
+                                <div class="shape-preview">
+                                    <svg width="200" height="100" viewBox="0 0 200 100" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="200" height="100" fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addEllipseBtn" data-shape="ellipse" title="椭圆形">
+                                <div class="shape-preview">
+                                    <svg width="200" height="100" viewBox="0 0 200 100" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <ellipse cx="100" cy="50" rx="100" ry="50" fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addTriangleBtn" data-shape="triangle" title="三角形">
+                                <div class="shape-preview">
+                                    <svg width="174" height="150" viewBox="0 0 174 150" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M86.6025 0L173.205 150H0L86.6025 0Z" fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addRoundedTriangleBtn" data-shape="rounded-triangle"
+                                title="圆角三角形">
+                                <div class="shape-preview">
+                                    <svg width="133" height="122" viewBox="0 0 133 122" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M41.8983 14C52.6755 -4.66667 79.6185 -4.66667 90.3957 14L128.501 80C139.278 98.6667 125.806 122 104.252 122H28.0419C6.48744 122 -6.98406 98.6667 3.79314 80L41.8983 14Z"
+                                            fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addPentagonBtn" data-shape="pentagon" title="五边形">
+                                <div class="shape-preview">
+                                    <svg width="191" height="181" viewBox="0 0 191 181" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M95.1055 0L190.211 69.0983L153.884 180.902H36.3269L-0.000183105 69.0983L95.1055 0Z"
+                                            fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addHexagonBtn" data-shape="hexagon" title="六边形">
+                                <div class="shape-preview">
+                                    <svg width="174" height="200" viewBox="0 0 174 200" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M86.6025 0L173.205 50V150L86.6025 200L0 150V50L86.6025 0Z"
+                                            fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addOctagonBtn" data-shape="octagon" title="八边形">
+                                <div class="shape-preview">
+                                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M100 0L170.711 29.2893L200 100L170.711 170.711L100 200L29.2893 170.711L0 100L29.2893 29.2893L100 0Z"
+                                            fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addDiamondBtn" data-shape="diamond" title="菱形">
+                                <div class="shape-preview">
+                                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M100 0L127.009 72.9909L200 100L127.009 127.009L100 200L72.9909 127.009L0 100L72.9909 72.9909L100 0Z"
+                                            fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addStar4Btn" data-shape="star" title="五角星">
+                                <div class="shape-preview">
+                                    <svg width="191" height="181" viewBox="0 0 191 181" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M95.1055 0L117.557 69.0983H190.211L131.433 111.803L153.884 180.902L95.1055 138.197L36.3269 180.902L58.7783 111.803L-0.000183105 69.0983H72.6541L95.1055 0Z"
+                                            fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addStar5Btn" data-shape="fat-star" title="胖五角星">
+                                <div class="shape-preview">
+                                    <svg width="191" height="181" viewBox="0 0 191 181" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M95.1055 0L128.609 53.886L190.211 69.0983L149.316 117.614L153.884 180.902L95.1055 157L36.3269 180.902L40.8952 117.614L-0.000183105 69.0983L61.6017 53.886L95.1055 0Z"
+                                            fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addStar6Btn" data-shape="rounded-star" title="圆角五角星">
+                                <div class="shape-preview">
+                                    <svg width="141" height="135" viewBox="0 0 141 135" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M58.7836 8.29182C62.3758 -2.7639 78.0167 -2.76388 81.609 8.29185L89.9535 33.9737C91.56 38.918 96.1675 42.2655 101.366 42.2655H128.37C139.994 42.2655 144.828 57.1409 135.423 63.9737L113.577 79.846C109.371 82.9018 107.611 88.3182 109.218 93.2624L117.562 118.944C121.154 130 108.501 139.194 99.096 132.361L77.2497 116.488C73.0439 113.433 67.3487 113.433 63.1429 116.488L41.2965 132.361C31.892 139.194 19.2382 130 22.8304 118.944L31.175 93.2624C32.7815 88.3182 31.0216 82.9018 26.8157 79.846L4.96939 63.9737C-4.43517 57.1409 0.398158 42.2655 12.0228 42.2655H39.0264C44.2251 42.2655 48.8326 38.918 50.4391 33.9737L58.7836 8.29182Z"
+                                            fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="material" id="addStar8Btn" data-shape="hex-star" title="六角星">
+                                <div class="shape-preview">
+                                    <svg width="174" height="200" viewBox="0 0 174 200" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M86.6025 0L119.603 42.8423L173.205 50L152.603 100L173.205 150L119.603 157.158L86.6025 200L53.6025 157.158L0 150L20.6025 100L0 50L53.6025 42.8423L86.6025 0Z"
+                                            fill="#6A89CC" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 已上传素材列表 -->
+                <div class="uploaded-materials-container" id="uploadedMaterialsContainer">
+                    <div class="uploaded-materials-header collapsed" id="uploadedMaterialsHeader">
+                        <div class="section-title">
+                            <i class="fas fa-images"></i> 已上传素材
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="uploaded-materials-list collapsed" id="uploadedMaterialsList">
+                        <!-- 已上传的素材将动态添加到这里 -->
+                    </div>
+                </div>
+
+                <!-- 已添加文字列表 -->
+                <div class="text-materials-container" id="textMaterialsContainer">
+                    <div class="text-materials-header collapsed" id="textMaterialsHeader">
+                        <div class="section-title">
+                            <i class="fas fa-text-height"></i> 已添加文字
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="text-materials-list collapsed" id="textMaterialsList">
+                        <!-- 已添加的文字将动态添加到这里 -->
+                    </div>
+                </div>
+
+                <!-- 已添加形状列表 -->
+                <div class="shape-materials-container" id="shapeMaterialsContainer">
+                    <div class="shape-materials-header collapsed" id="shapeMaterialsHeader">
+                        <div class="section-title">
+                            <i class="fas fa-draw-polygon"></i> 已添加形状
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="shape-materials-list collapsed" id="shapeMaterialsList">
+                        <!-- 已添加的形状将动态添加到这里 -->
+                    </div>
+                </div>
+
+                <!-- 已添加模块列表 -->
+                <div class="module-materials-container" id="moduleMaterialsContainer">
+                    <div class="module-materials-header collapsed" id="moduleMaterialsHeader">
+                        <div class="section-title">
+                            <i class="fas fa-cube"></i> 已添加模块
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="module-materials-list collapsed" id="moduleMaterialsList">
+                        <!-- 已添加的模块将动态添加到这里 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间预览区域 -->
+            <div class="preview-container">
+                <div class="preview-header">
+                    <h3><i class="fas fa-eye"></i> 预览区域</h3>
+                    <div class="zoom-info" id="zoomInfo">缩放: <span id="zoomLevel">100</span></div>
+                </div>
+                <div class="preview-area" id="previewArea">
+                    <div class="widget-container" id="widgetContainer">
+                        <!-- 辅助线容器 - 显示在widget内部 -->
+                        <div class="guide-lines" id="guideLines"></div>
+                        <div class="widget-content" id="widgetContent">
+                            <!-- 导入的素材将动态添加到这里 -->
+                        </div>
+                    </div>
+                    <div class="zoom-controls">
+                        <button class="btn btn-small btn-secondary" id="zoomInPreviewBtn">
+                            <i class="fas fa-search-plus"></i> 放大
+                        </button>
+                        <button class="btn btn-small btn-secondary" id="zoomOutPreviewBtn">
+                            <i class="fas fa-search-minus"></i> 缩小
+                        </button>
+                        <button class="btn btn-small btn-secondary" id="zoomResetPreviewBtn">
+                            <i class="fas fa-sync-alt"></i> 重置
+                        </button>
+                    </div>
+                </div>
+                <div style="text-align: center; color: #aaa; font-size: 11px; margin-top: 8px;">
+                    <i class="fas fa-info-circle"></i> 点击选择元素，拖拽更改位置，拖动控制点调整尺寸
+                </div>
+            </div>
+
+            <!-- 右侧属性面板 -->
+            <div class="properties">
+                <!-- Widget属性面板 - 默认显示 -->
+                <div class="property-panel active" id="widgetPanel">
+                    <div class="section-title">
+                        <i class="fas fa-sliders-h"></i> Widget属性
+                    </div>
+                    <div class="property-group">
+                        <div class="property-row">
+                            <span class="property-label">名称</span>
+                            <input type="text" id="widgetName" value="custom_widget">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">版本</span>
+                            <input type="number" id="widgetVersion" value="1" min="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">尺寸</span>
+                            <select id="widgetSize">
+                                <option value="2x2">2×2</option>
+                                <option value="4x2" selected>4×2</option>
+                            </select>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">不透明度</span>
+                            <input type="range" id="opacity" min="0" max="100" value="100">
+                        </div>
+
+                        <!-- 背景设置 -->
+                        <div class="section-title" style="margin-top: 10px;">
+                            <i class="fas fa-paint-brush"></i> 背景设置
+                        </div>
+
+                        <!-- 导入背景图片 -->
+                        <div class="background-upload" id="backgroundUploadContainer">
+                            <div class="background-upload-btn">
+                                <i class="fas fa-image"></i> 导入背景图片
+                            </div>
+                            <input type="file" id="uploadBackground" accept=".png,.jpg,.jpeg,.gif,image/*"
+                                style="display: none;">
+                        </div>
+
+                        <div class="property-row">
+                            <button class="btn btn-small btn-secondary" id="clearBackgroundBtn">
+                                <i class="fas fa-times"></i> 清除背景图片
+                            </button>
+                        </div>
+
+                        <!-- 纯色背景 -->
+                        <div class="property-row">
+                            <span class="property-label">背景颜色</span>
+                            <input type="color" id="widgetBgColor" value="#ffffff">
+                        </div>
+
+                        <div class="color-picker">
+                            <div class="color-option selected" style="background-color: #ffffff;" data-color="#ffffff">
+                            </div>
+                            <div class="color-option" style="background-color: #fc6c56;" data-color="#fc6c56"></div>
+                            <div class="color-option" style="background-color: #ffa2c3;" data-color="#ffa2c3"></div>
+                            <div class="color-option" style="background-color: #e1befd;" data-color="#e1befd"></div>
+                            <div class="color-option" style="background-color: #f8c291;" data-color="#f8c291"></div>
+                            <div class="color-option" style="background-color: #f9ffab;" data-color="#f9ffab"></div>
+                            <div class="color-option" style="background-color: #bbfdc9;" data-color="#bbfdc9"></div>
+                            <div class="color-option" style="background-color: #abfffe;" data-color="#abfffe"></div>
+                            <div class="color-option" style="background-color: #78e08f;" data-color="#78e08f"></div>
+                            <div class="color-option" style="background-color: #60a3bc;" data-color="#60a3bc"></div>
+                        </div>
+
+                        <!-- 渐变背景编辑器 -->
+                        <div class="gradient-editor" id="gradientEditor">
+                            <div class="property-label" style="margin-bottom: 10px;">渐变</div>
+                            <div class="gradient-types">
+                                <div class="gradient-type selected" data-type="linear">Linear</div>
+                                <div class="gradient-type" data-type="radial">Radial</div>
+                            </div>
+                            <div class="gradient-stops-container" id="gradientStopsContainer">
+                                <!-- 颜色停止点将动态添加到这里 -->
+                            </div>
+                            <div class="gradient-preview" id="gradientPreview"></div>
+                            <div class="gradient-controls">
+                                <button class="gradient-btn-small" id="addStopBtn">添加颜色点</button>
+                                <button class="gradient-btn-small" id="applyGradientBtn">应用渐变</button>
+                                <button class="gradient-btn-small" id="clearGradientBtn">清除渐变</button>
+                            </div>
+                        </div>
+
+                        <!-- 网格设置 -->
+                        <div class="grid-properties">
+                            <div class="section-title">
+                                <i class="fas fa-border-all"></i> 辅助线设置
+                            </div>
+                            <div class="property-row">
+                                <span class="property-label">网格颜色</span>
+                            </div>
+                            <div class="grid-color-picker" id="gridColorPicker">
+                                <div class="grid-color-option selected" style="background-color: rgba(136, 136, 136);"
+                                    data-color="rgba(136, 136, 136, 0.4)"></div>
+                                <div class="grid-color-option" style="background-color: rgba(255, 255, 255);"
+                                    data-color="rgba(255, 255, 255, 0.4)"></div>
+                                <div class="grid-color-option" style="background-color: rgb(255, 117, 117);"
+                                    data-color="rgba(255, 79, 79, 0.4)"></div>
+                                <div class="grid-color-option" style="background-color: rgb(96, 253, 130);"
+                                    data-color="rgba(62, 233, 99, 0.4)"></div>
+                                <div class="grid-color-option" style="background-color: rgba(255, 234, 107);"
+                                    data-color="rgba(255, 234, 107, 0.4)"></div>
+                                <div class="grid-color-option" style="background-color: rgb(103, 187, 255);"
+                                    data-color="rgba(83, 178, 255, 0.4)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 素材属性面板 -->
+                <div class="property-panel" id="materialPanel" style="display: none;">
+                    <div class="section-title">
+                        <i class="fas fa-image"></i> 素材属性
+                    </div>
+                    <div class="property-group">
+                        <div class="property-row">
+                            <span class="property-label">素材名称</span>
+                            <span class="property-value" id="materialNameDisplay">未选择</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">宽度(格子)</span>
+                            <input type="number" id="materialWidth" min="1" max="30" value="5" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">高度(格子)</span>
+                            <input type="number" id="materialHeight" min="1" max="30" value="5" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">X位置(格子)</span>
+                            <input type="number" id="materialX" min="0" max="60" value="15" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Y位置(格子)</span>
+                            <input type="number" id="materialY" min="0" max="30" value="15" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">旋转角度</span>
+                            <input type="range" id="materialRotation" min="0" max="360" value="0">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">不透明度</span>
+                            <input type="range" id="materialOpacity" min="0" max="100" value="100">
+                        </div>
+                        <div class="layer-controls">
+                            <button class="btn btn-small btn-secondary" id="bringForwardBtn">
+                                <i class="fas fa-arrow-up"></i> 上移一层
+                            </button>
+                            <button class="btn btn-small btn-secondary" id="sendBackwardBtn">
+                                <i class="fas fa-arrow-down"></i> 下移一层
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文字属性面板 -->
+                <div class="property-panel" id="textPanel" style="display: none;">
+                    <div class="section-title">
+                        <i class="fas fa-font"></i> 文字属性
+                    </div>
+                    <div class="property-group">
+                        <div class="property-row">
+                            <span class="property-label">文字内容</span>
+                            <input type="text" id="textContent" value="示例文字" maxlength="50">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">文字名称</span>
+                            <input type="text" id="textName" value="文字1" maxlength="20">
+                        </div>
+                        <!-- 对齐方式 -->
+                        <div class="property-row">
+                            <span class="property-label">对齐方式</span>
+                            <div class="alignment-controls" style="display: flex; gap: 5px; flex-grow: 1;">
+                                <!-- 水平对齐按钮 -->
+                                <div class="alignment-btn-group" style="display: flex; gap: 2px; flex: 1;">
+                                    <button class="alignment-btn active" data-align="horizontal" data-value="left"
+                                        title="左对齐">
+                                        <i class="fas fa-align-left"></i>
+                                    </button>
+                                    <button class="alignment-btn" data-align="horizontal" data-value="center"
+                                        title="水平居中">
+                                        <i class="fas fa-align-center"></i>
+                                    </button>
+                                    <button class="alignment-btn" data-align="horizontal" data-value="right"
+                                        title="右对齐">
+                                        <i class="fas fa-align-right"></i>
+                                    </button>
+                                </div>
+                                <!-- 垂直对齐按钮 -->
+                                <div class="alignment-btn-group" style="display: flex; gap: 2px; flex: 1;">
+                                    <button class="alignment-btn" data-align="vertical" data-value="top" title="顶部对齐">
+                                        <i class="fas fa-align-left fa-rotate-90"></i>
+                                    </button>
+                                    <button class="alignment-btn active" data-align="vertical" data-value="center"
+                                        title="垂直居中">
+                                        <i class="fas fa-align-center fa-rotate-90"></i>
+                                    </button>
+                                    <button class="alignment-btn" data-align="vertical" data-value="bottom"
+                                        title="底部对齐">
+                                        <i class="fas fa-align-right fa-rotate-90"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">宽度(格子)</span>
+                            <input type="number" id="textWidth" min="1" max="30" value="8" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">高度(格子)</span>
+                            <input type="number" id="textHeight" min="1" max="30" value="4" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">文字大小(网格)</span>
+                            <input type="number" id="textSize" min="0.5" max="30" value="3" step="0.5">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">颜色</span>
+                            <input type="color" id="textColor" value="#000000">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">字体</span>
+                            <select id="textFont">
+                                <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                                <option value="'Noto Sans SC', sans-serif" selected>Noto Sans SC</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="'Times New Roman', serif">Times New Roman</option>
+                                <option value="'Courier New', monospace">Courier New</option>
+                            </select>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">X位置(格子)</span>
+                            <input type="number" id="textX" min="0" max="60" value="15" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Y位置(格子)</span>
+                            <input type="number" id="textY" min="0" max="30" value="15" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">旋转角度</span>
+                            <input type="range" id="textRotation" min="0" max="360" value="0">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">不透明度</span>
+                            <input type="range" id="textOpacity" min="0" max="100" value="100">
+                        </div>
+                        <div class="layer-controls">
+                            <button class="btn btn-small btn-secondary" id="textBringForwardBtn">
+                                <i class="fas fa-arrow-up"></i> 上移一层
+                            </button>
+                            <button class="btn btn-small btn-secondary" id="textSendBackwardBtn">
+                                <i class="fas fa-arrow-down"></i> 下移一层
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 形状属性面板 -->
+                <div class="property-panel" id="shapePanel" style="display: none;">
+                    <div class="section-title">
+                        <i class="fas fa-draw-polygon"></i> 形状属性
+                    </div>
+                    <div class="property-group">
+                        <div class="property-row">
+                            <span class="property-label">形状名称</span>
+                            <span class="property-value" id="shapeNameDisplay">未选择</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">形状类型</span>
+                            <span class="property-value" id="shapeTypeDisplay">未选择</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">宽度(格子)</span>
+                            <input type="number" id="shapeWidth" min="1" max="30" value="5" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">高度(格子)</span>
+                            <input type="number" id="shapeHeight" min="1" max="30" value="5" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">颜色</span>
+                            <input type="color" id="shapeColor" value="#6a89cc" style="margin-left: 10px;">
+                        </div>
+                        <div class="gradient-editor" id="shapeGradientEditor">
+                            <div class="property-label" style="margin-bottom: 10px;">渐变</div>
+                            <div class="gradient-types">
+                                <div class="gradient-type selected" data-type="linear">Linear</div>
+                                <div class="gradient-type" data-type="radial">Radial</div>
+                            </div>
+                            <div class="gradient-stops-container" id="shapeGradientStopsContainer">
+                                <!-- 颜色停止点将动态添加到这里 -->
+                            </div>
+                            <div class="gradient-preview" id="shapeGradientPreview"></div>
+                            <div class="gradient-controls">
+                                <button class="gradient-btn-small" id="shapeAddStopBtn">添加颜色点</button>
+                                <button class="gradient-btn-small" id="shapeApplyGradientBtn">应用渐变</button>
+                                <button class="gradient-btn-small" id="shapeClearGradientBtn">清除渐变</button>
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">X位置(格子)</span>
+                            <input type="number" id="shapeX" min="0" max="60" value="15" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Y位置(格子)</span>
+                            <input type="number" id="shapeY" min="0" max="30" value="15" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">旋转角度</span>
+                            <input type="range" id="shapeRotation" min="0" max="360" value="0">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">不透明度</span>
+                            <input type="range" id="shapeOpacity" min="0" max="100" value="100">
+                        </div>
+                        <div class="layer-controls">
+                            <button class="btn btn-small btn-secondary" id="shapeBringForwardBtn">
+                                <i class="fas fa-arrow-up"></i> 上移一层
+                            </button>
+                            <button class="btn btn-small btn-secondary" id="shapeSendBackwardBtn">
+                                <i class="fas fa-arrow-down"></i> 下移一层
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 模块属性面板 -->
+                <div class="property-panel" id="modulePanel" style="display: none;">
+                    <div class="section-title">
+                        <i class="fas fa-cube"></i> 模块属性
+                    </div>
+                    <div class="property-group">
+                        <div class="property-row">
+                            <span class="property-label">模块名称</span>
+                            <span class="property-value" id="moduleNameDisplay">未选择</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">模块类型</span>
+                            <span class="property-value" id="moduleTypeDisplay">未选择</span>
+                        </div>
+                        <!-- 对齐方式 -->
+                        <div class="property-row">
+                            <span class="property-label">对齐方式</span>
+                            <div class="alignment-controls" style="display: flex; gap: 5px; flex-grow: 1;">
+                                <!-- 水平对齐按钮 -->
+                                <div class="alignment-btn-group" style="display: flex; gap: 2px; flex: 1;">
+                                    <button class="alignment-btn active" data-align="horizontal" data-value="left"
+                                        title="左对齐">
+                                        <i class="fas fa-align-left"></i>
+                                    </button>
+                                    <button class="alignment-btn" data-align="horizontal" data-value="center"
+                                        title="水平居中">
+                                        <i class="fas fa-align-center"></i>
+                                    </button>
+                                    <button class="alignment-btn" data-align="horizontal" data-value="right"
+                                        title="右对齐">
+                                        <i class="fas fa-align-right"></i>
+                                    </button>
+                                </div>
+                                <!-- 垂直对齐按钮 -->
+                                <div class="alignment-btn-group" style="display: flex; gap: 2px; flex: 1;">
+                                    <button class="alignment-btn" data-align="vertical" data-value="top" title="顶部对齐">
+                                        <i class="fas fa-align-left fa-rotate-90"></i>
+                                    </button>
+                                    <button class="alignment-btn active" data-align="vertical" data-value="center"
+                                        title="垂直居中">
+                                        <i class="fas fa-align-center fa-rotate-90"></i>
+                                    </button>
+                                    <button class="alignment-btn" data-align="vertical" data-value="bottom"
+                                        title="底部对齐">
+                                        <i class="fas fa-align-right fa-rotate-90"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 日历日期格式选择（只在日历模块显示） -->
+                        <div class="property-row" id="dateFormatRow" style="display: none;">
+                            <span class="property-label">日期格式</span>
+                            <select id="moduleDateFormat">
+                                <option value="MMM dd">月份 日期（MMM dd）</option>
+                                <option value="EEE">星期（EEE）</option>
+                            </select>
+                        </div>
+                        <!-- 星期格式选择（只在星期模块显示） -->
+                        <div class="property-row" id="weekFormatRow" style="display: none;">
+                            <span class="property-label">星期格式</span>
+                            <select id="moduleWeekFormat">
+                                <option value="MMMM dd'th', 'week'">MMMM dd'th', 'week'</option>
+                                <option value="Week: ww/52">Week: ww/52</option>
+                                <option value="Wk: ww/52">Wk: ww/52</option>
+                                <option value="ww">ww</option>
+                                <option value="ww/52">ww/52</option>
+                                <option value="Wk ww">Wk ww</option>
+                            </select>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">宽度(格子)</span>
+                            <input type="number" id="moduleWidth" min="1" max="30" value="8" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">高度(格子)</span>
+                            <input type="number" id="moduleHeight" min="1" max="30" value="4" step="1">
+                        </div>
+                        <!-- 添加的字号和颜色设置 -->
+                        <div class="property-row">
+                            <span class="property-label">文字大小(网格)</span>
+                            <input type="number" id="moduleTextSize" min="0.5" max="30" value="3" step="0.5">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">字体颜色</span>
+                            <input type="color" id="moduleTextColor" value="#000000">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">X位置(格子)</span>
+                            <input type="number" id="moduleX" min="0" max="60" value="15" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Y位置(格子)</span>
+                            <input type="number" id="moduleY" min="0" max="30" value="15" step="1">
+                        </div>
+                        <div class="layer-controls">
+                            <button class="btn btn-small btn-secondary" id="moduleBringForwardBtn">
+                                <i class="fas fa-arrow-up"></i> 上移一层
+                            </button>
+                            <button class="btn btn-small btn-secondary" id="moduleSendBackwardBtn">
+                                <i class="fas fa-arrow-down"></i> 下移一层
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 指针时钟属性面板 -->
+                <div class="property-panel" id="analogClockPanel" style="display: none;">
+                    <div class="section-title">
+                        <i class="fas fa-clock"></i> 指针时钟属性
+                    </div>
+                    <div class="property-group">
+                        <div class="property-row">
+                            <span class="property-label">名称</span>
+                            <span class="property-value" id="analogClockNameDisplay">未选择</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">宽度(格子)</span>
+                            <input type="number" id="analogClockWidth" min="1" max="30" value="25" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">高度(格子)</span>
+                            <input type="number" id="analogClockHeight" min="1" max="30" value="25" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">X位置(格子)</span>
+                            <input type="number" id="analogClockX" min="0" max="60" value="2" step="1">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Y位置(格子)</span>
+                            <input type="number" id="analogClockY" min="0" max="30" value="2" step="1">
+                        </div>
+
+                        <!-- 时钟图片设置 -->
+                        <div class="section-title" style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <i class="fas fa-images"></i> 时钟图片设置
+                            </div>
+                            <button class="btn btn-primary" id="analogClockPrimaryBtn">
+                                <i class="fas fa-th"></i> 时钟素材库
+                            </button>
+                        </div>
+
+                        <!-- 表盘图片 -->
+                        <div class="property-row clock-image-row">
+                            <span class="property-label">表盘</span>
+                            <div class="clock-image-container">
+                                <div class="clock-image-preview" id="analogClockDialPreview">
+                                    <img src="./resources/clock_dial.png" alt="表盘" class="clock-preview-img"
+                                        id="analogClockDialImg">
+                                    <div class="clock-image-overlay">
+                                        <i class="fas fa-camera"></i>
+                                    </div>
+                                </div>
+                                <input type="file" id="uploadClockDial" accept=".png,.jpg,.jpeg,.gif,image/*"
+                                    style="display: none;">
+                            </div>
+                        </div>
+
+                        <!-- 时针图片 -->
+                        <div class="property-row clock-image-row">
+                            <span class="property-label">时针</span>
+                            <div class="clock-image-container">
+                                <div class="clock-image-preview" id="analogClockHourPreview">
+                                    <img src="./resources/clock_hour.png" alt="时针" class="clock-preview-img"
+                                        id="analogClockHourImg">
+                                    <div class="clock-image-overlay">
+                                        <i class="fas fa-camera"></i>
+                                    </div>
+                                </div>
+                                <input type="file" id="uploadClockHour" accept=".png,.jpg,.jpeg,.gif,image/*"
+                                    style="display: none;">
+                            </div>
+                        </div>
+
+                        <!-- 分针图片 -->
+                        <div class="property-row clock-image-row">
+                            <span class="property-label">分针</span>
+                            <div class="clock-image-container">
+                                <div class="clock-image-preview" id="analogClockMinutePreview">
+                                    <img src="./resources/clock_minute.png" alt="分针" class="clock-preview-img"
+                                        id="analogClockMinuteImg">
+                                    <div class="clock-image-overlay">
+                                        <i class="fas fa-camera"></i>
+                                    </div>
+                                </div>
+                                <input type="file" id="uploadClockMinute" accept=".png,.jpg,.jpeg,.gif,image/*"
+                                    style="display: none;">
+                            </div>
+                        </div>
+
+                        <!-- 秒针图片 -->
+                        <div class="property-row clock-image-row">
+                            <span class="property-label">秒针</span>
+                            <div class="clock-image-container">
+                                <div class="clock-image-preview" id="analogClockSecondPreview">
+                                    <img src="./resources/clock_second.png" alt="秒针" class="clock-preview-img"
+                                        id="analogClockSecondImg">
+                                    <div class="clock-image-overlay">
+                                        <i class="fas fa-camera"></i>
+                                    </div>
+                                </div>
+                                <input type="file" id="uploadClockSecond" accept=".png,.jpg,.jpeg,.gif,image/*"
+                                    style="display: none;">
+                            </div>
+                        </div>
+
+                        <!-- 图片重置按钮 -->
+                        <div class="property-row">
+                            <button class="btn btn-small btn-secondary" id="resetClockImagesBtn"
+                                style="width: 100%; margin-top: 10px;">
+                                <i class="fas fa-redo"></i> 重置为默认图片
+                            </button>
+                        </div>
+
+                        <!-- 图层控制 -->
+                        <div class="layer-controls">
+                            <button class="btn btn-small btn-secondary" id="analogClockBringForwardBtn">
+                                <i class="fas fa-arrow-up"></i> 上移一层
+                            </button>
+                            <button class="btn btn-small btn-secondary" id="analogClockSendBackwardBtn">
+                                <i class="fas fa-arrow-down"></i> 下移一层
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 天气图标属性面板 -->
+                <div class="property-panel" id="weatherIconPanel" style="display: none;">
+                    <div class="section-title">
+                        <i class="fas fa-cloud-sun"></i> 天气图标属性
+                    </div>
+                    <div class="property-group">
+                        <div class="property-row">
+                            <span class="property-label">名称</span>
+                            <span class="property-value" id="weatherIconNameDisplay">未选择</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">宽度(格子)</span>
+                            <input type="number" id="weatherIconWidth" min="1" max="30" step="1" value="5">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">高度(格子)</span>
+                            <input type="number" id="weatherIconHeight" min="1" max="30" step="1" value="5">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">X位置(格子)</span>
+                            <input type="number" id="weatherIconX" min="0" max="60" step="1" value="15">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Y位置(格子)</span>
+                            <input type="number" id="weatherIconY" min="0" max="30" step="1" value="15">
+                        </div>
+                        <div class="layer-controls">
+                            <button class="btn btn-small btn-secondary" id="weatherIconBringForwardBtn">
+                                <i class="fas fa-arrow-up"></i> 上移一层
+                            </button>
+                            <button class="btn btn-small btn-secondary" id="weatherIconSendBackwardBtn">
+                                <i class="fas fa-arrow-down"></i> 下移一层
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 温度属性面板 -->
+                <div class="property-panel" id="temperaturePanel" style="display: none;">
+                    <div class="section-title">
+                        <i class="fas fa-thermometer-half"></i> 温度属性
+                    </div>
+                    <div class="property-group">
+                        <div class="property-row">
+                            <span class="property-label">名称</span>
+                            <span class="property-value" id="temperatureNameDisplay">未选择</span>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">宽度(格子)</span>
+                            <input type="number" id="temperatureWidth" min="1" max="30" step="1" value="8">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">高度(格子)</span>
+                            <input type="number" id="temperatureHeight" min="1" max="30" step="1" value="4">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">X位置(格子)</span>
+                            <input type="number" id="temperatureX" min="0" max="60" step="1" value="20">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Y位置(格子)</span>
+                            <input type="number" id="temperatureY" min="0" max="30" step="1" value="15">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">文字大小(网格)</span>
+                            <input type="number" id="temperatureTextSize" min="0.5" max="30" step="0.5" value="3">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">文字颜色</span>
+                            <input type="color" id="temperatureTextColor" value="#000000">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">内容</span>
+                            <input type="text" id="temperatureContent" value="25°C">
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">对齐方式</span>
+                            <div class="alignment-controls" style="display: flex; gap: 5px; flex-grow: 1;">
+                                <!-- 水平对齐按钮 -->
+                                <div class="alignment-btn-group" style="display: flex; gap: 2px; flex: 1;">
+                                    <button class="alignment-btn active" data-align="horizontal" data-value="left"
+                                        title="左对齐">
+                                        <i class="fas fa-align-left"></i>
+                                    </button>
+                                    <button class="alignment-btn" data-align="horizontal" data-value="center"
+                                        title="水平居中">
+                                        <i class="fas fa-align-center"></i>
+                                    </button>
+                                    <button class="alignment-btn" data-align="horizontal" data-value="right"
+                                        title="右对齐">
+                                        <i class="fas fa-align-right"></i>
+                                    </button>
+                                </div>
+                                <!-- 垂直对齐按钮 -->
+                                <div class="alignment-btn-group" style="display: flex; gap: 2px; flex: 1;">
+                                    <button class="alignment-btn" data-align="vertical" data-value="top" title="顶部对齐">
+                                        <i class="fas fa-align-left fa-rotate-90"></i>
+                                    </button>
+                                    <button class="alignment-btn active" data-align="vertical" data-value="center"
+                                        title="垂直居中">
+                                        <i class="fas fa-align-center fa-rotate-90"></i>
+                                    </button>
+                                    <button class="alignment-btn" data-align="vertical" data-value="bottom"
+                                        title="底部对齐">
+                                        <i class="fas fa-align-right fa-rotate-90"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layer-controls">
+                            <button class="btn btn-small btn-secondary" id="temperatureBringForwardBtn">
+                                <i class="fas fa-arrow-up"></i> 上移一层
+                            </button>
+                            <button class="btn btn-small btn-secondary" id="temperatureSendBackwardBtn">
+                                <i class="fas fa-arrow-down"></i> 下移一层
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导出配置模态框 -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-file-export"></i> 导出配置</h3>
+                <button class="close-modal" id="closeExportModal">&times;</button>
+            </div>
+
+            <div class="export-modal-body">
+                <!-- 左侧：预览图区域 -->
+                <div class="export-left">
+                    <!-- 预览图区域 -->
+                    <div>
+                        <div class="section-title" style="margin-bottom: 10px;">
+                            <i class="fas fa-image"></i> 预览图
+                        </div>
+                        <div class="export-preview" id="configPreview">
+                            <canvas id="configPreviewCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 导出选项 -->
+                    <div class="export-options">
+                        <div class="export-option-group">
+                            <div class="section-title">
+                                <i class="fas fa-expand-alt"></i> 分辨率
+                            </div>
+                            <select id="configResolutionSelect" class="dropdown-select">
+                                <option value="0.5">0.5x (312×150)</option>
+                                <option value="0.75">0.75x (468×225)</option>
+                                <option value="1" selected>1.0x (624×300)</option>
+                                <option value="1.5">1.5x (936×450)</option>
+                                <option value="2">2.0x (1248×600)</option>
+                                <option value="3">3.0x (1872×900)</option>
+                            </select>
+                        </div>
+
+                        <div class="export-option-group">
+                            <div class="section-title">
+                                <i class="fas fa-file-image"></i> 格式
+                            </div>
+                            <select id="configFormatSelect" class="dropdown-select">
+                                <option value="png" selected>PNG</option>
+                                <option value="jpeg">JPEG</option>
+                                <option value="webp">WebP</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 导出按钮放在预览图下方 -->
+                    <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" id="copyJson">
+                            <i class="fas fa-copy"></i> 复制JSON
+                        </button>
+                        <button class="btn btn-primary" id="exportZipBtn">
+                            <i class="fas fa-file-archive"></i> 导出ZIP包
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 右侧：JSON配置区域 -->
+                <div class="export-right">
+                    <div class="section-title">
+                        <i class="fas fa-code"></i> JSON配置
+                    </div>
+                    <p style="margin-bottom: 10px; font-size: 13px; color: #aaa;">以下为生成的JSON配置，可以与预览图一起导出为ZIP包。</p>
+                    <div class="export-format" id="jsonOutput">
+                        {/* JSON内容将动态生成 */}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" id="copyElement">复制</div>
+        <div class="context-menu-item" id="pasteElement">粘贴</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" id="deleteElement">删除</div>
+    </div>
+</body>
+
+<script src="script.js"></script>
+
+</html>
