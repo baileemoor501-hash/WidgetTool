@@ -4862,9 +4862,8 @@ function updateWidgetDataViews() {
             const svgFileName = `shape_${index}.svg`;
 
             const shapeView = {
-                view_type: "ShapeableImageView",
-                svg: svgFileName,
-                color: shape.color,
+                view_type: "ShapeSvgView",
+                bg: svgFileName,
                 position: {
                     x: x,
                     y: y,
@@ -4872,14 +4871,6 @@ function updateWidgetDataViews() {
                     height: height
                 }
             };
-
-            // 添加渐变属性
-            if (shape.gradient) {
-                shapeView.gradient = {
-                    type: shape.gradientType || 'linear',
-                    stops: shape.gradientStops || []
-                };
-            }
 
             widgetData.layer[0].views.push(shapeView);
             index++;
@@ -4892,8 +4883,8 @@ function updateWidgetDataViews() {
             const element = module.element;
             const x = parseInt(element.dataset.x) || 0;
             const y = parseInt(element.dataset.y) || 0;
-            const width = parseInt(element.dataset.gridWidth) || 8;
-            const height = parseInt(element.dataset.gridHeight) || 4;
+            const width = parseInt(element.dataset.gridWidth) || 9;
+            const height = parseInt(element.dataset.gridHeight) || 5;
 
             // 根据模块类型创建不同的视图
             // 检查是否为需要合并到custom_text_clock_1 layer的模块
@@ -5040,8 +5031,8 @@ function updateWidgetDataViews() {
     analogClockElements.forEach(clock => {
         if (clock.element) {
             const element = clock.element;
-            const x = parseInt(element.dataset.x) || 2;
-            const y = parseInt(element.dataset.y) || 2;
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
             const width = parseInt(element.dataset.gridWidth) || 25;
             const height = parseInt(element.dataset.gridHeight) || 25;
 
