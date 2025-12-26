@@ -1358,8 +1358,8 @@ input[type="color"] {
     font-size: 11px;
 }
 
-/* 模态框 */
-.modal {
+/* 导出配置模态框 */
+.export-modal {
     display: none;
     position: fixed;
     top: 0;
@@ -1372,7 +1372,7 @@ input[type="color"] {
     align-items: center;
 }
 
-.modal-content {
+.export-modal-content {
     background: #1a1a2e;
     border-radius: 10px;
     padding: 20px;
@@ -1386,11 +1386,11 @@ input[type="color"] {
     flex-direction: column;
 }
 
-.modal-header {
+.export-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .export-modal-body {
@@ -1398,7 +1398,6 @@ input[type="color"] {
     flex: 1;
     gap: 20px;
     overflow: hidden;
-    margin-top: 15px;
 }
 
 .export-left {
@@ -1420,7 +1419,7 @@ input[type="color"] {
     padding-left: 20px;
 }
 
-.close-modal {
+.export-close-modal {
     background: none;
     border: none;
     color: white;
@@ -1473,13 +1472,13 @@ input[type="color"] {
 
 /* 响应式设计 */
 @media (max-width: 1200px) {
-    .modal-content {
+    .export-modal-content {
         width: 70vw;
     }
 }
 
 @media (max-width: 768px) {
-    .modal-content {
+    .export-modal-content {
         width: 90vw;
         height: 80vh;
     }
@@ -1689,52 +1688,27 @@ input[type="color"] {
     flex-direction: column;
 }
 
-.modal-header {
+.material-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 1px solid #eaeaea;
-    background: #f8f9fa;
     border-radius: 8px 8px 0 0;
 }
 
-.modal-title {
+.material-modal-title {
     margin: 0;
     font-size: 18px;
-    color: #333;
+    color: #fff;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.modal-title i {
-    color: #6a89cc;
-}
-
-.close-modal {
-    cursor: pointer;
-    font-size: 20px;
-    color: #999;
-    transition: color 0.2s;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-}
-
-.close-modal:hover {
-    color: #333;
-    background: #f0f0f0;
-}
-
-.modal-body {
+.material-modal-body {
     flex: 1;
-    padding: 20px;
+    padding: 10px;
     overflow-y: auto;
-    background: #fff;
 }
 
 /* 加载状态 */
@@ -1776,7 +1750,7 @@ input[type="color"] {
 }
 
 .retry-btn {
-    padding: 10px 20px;
+    padding: 10px;
     background: #3498db;
     color: white;
     border: none;
@@ -1816,239 +1790,77 @@ input[type="color"] {
 /* 素材库网格 */
 .material-library-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-    padding: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* 网格项宽度 */
+    gap: 12px; /* 间距 */
+    padding: 8px;
 }
 
 .material-library-item {
     background: white;
-    border-radius: 8px;
+    border-radius: 10px; 
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
+    cursor: pointer;
+    position: relative; /* 为tooltip定位做准备 */
 }
 
 .material-library-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px); /* 减小悬停上移距离 */
 }
 
 .material-library-thumbnail {
     width: 100%;
-    height: 150px;
-    background: #f8f9fa;
+    height: 80px; 
+    background: #f5f7fa; 
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     cursor: pointer;
     position: relative;
+    padding: 5px; /* 添加内边距 */
 }
 
 .material-library-thumbnail img {
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 90%; /* 图片占容器90% */
+    max-height: 90%; /* 图片占容器90% */
     object-fit: contain;
     transition: transform 0.3s ease;
 }
 
 .material-library-thumbnail:hover img {
-    transform: scale(1.05);
+    transform: scale(1.03); /* 减小缩放比例 */
 }
 
+/* 素材名称样式 - 默认隐藏，鼠标悬停时显示 */
 .material-library-name {
-    padding: 10px;
-    font-size: 12px;
-    color: #555;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 6px 4px; /* 减小内边距 */
+    font-size: 11px; /* 减小字体大小 */
+    color: white;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background: #fff;
-    border-top: 1px solid #f0f0f0;
+    background: rgba(41, 41, 41, 0.3); /* 半透明黑色背景 */
+    backdrop-filter: blur(4px);
+    border-radius: 0 0 10px 10px;
+    opacity: 0; /* 默认透明 */
+    visibility: hidden; /* 默认隐藏 */
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+    pointer-events: none; /* 防止干扰鼠标事件 */
 }
 
-.material-library-actions {
-    padding: 10px;
-    display: flex;
-    gap: 5px;
-    background: #fafafa;
-    border-top: 1px solid #f0f0f0;
-}
-
-.material-library-add-btn {
-    flex: 1;
-    padding: 6px 10px;
-    background: #6a89cc;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    transition: background 0.2s;
-}
-
-.material-library-add-btn:hover {
-    background: #4a69bd;
-}
-
-.material-library-preview-btn {
-    padding: 6px 10px;
-    background: #eaeaea;
-    color: #666;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.material-library-preview-btn:hover {
-    background: #ddd;
-    color: #333;
-}
-
-/* 预览模态框 */
-.material-preview-modal {
-    width: 80%;
-    max-width: 800px;
-    max-height: 90vh;
-}
-
-.material-preview-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    max-height: 60vh;
-    overflow: auto;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    margin-bottom: 20px;
-}
-
-.material-preview-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.material-preview-info {
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 4px;
-}
-
-.material-preview-info p {
-    margin: 5px 0;
-    font-size: 14px;
-}
-
-.material-preview-info strong {
-    color: #333;
-    margin-right: 10px;
-}
-
-.material-preview-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-.add-from-preview {
-    padding: 10px 20px;
-    background: #6a89cc;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.close-preview {
-    padding: 10px 20px;
-    background: #f0f0f0;
-    color: #666;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.add-from-preview:hover {
-    background: #4a69bd;
-}
-
-.close-preview:hover {
-    background: #ddd;
-}
-
-/* 通知样式 */
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 20px;
-    background: white;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 10000;
-    transform: translateX(150%);
-    transition: transform 0.3s ease;
-}
-
-.notification.show {
-    transform: translateX(0);
-}
-
-.notification i {
-    font-size: 18px;
-}
-
-.notification-success {
-    border-left: 4px solid #2ecc71;
-}
-
-.notification-success i {
-    color: #2ecc71;
-}
-
-.notification-info {
-    border-left: 4px solid #3498db;
-}
-
-.notification-info i {
-    color: #3498db;
-}
-
-.notification-error {
-    border-left: 4px solid #e74c3c;
-}
-
-.notification-error i {
-    color: #e74c3c;
+/* 鼠标悬停时显示名称 */
+.material-library-item:hover .material-library-name {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* 响应式设计 */
@@ -2059,12 +1871,12 @@ input[type="color"] {
     }
     
     .material-library-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* 移动端更小的网格 */
+        gap: 8px;
     }
     
     .material-library-thumbnail {
-        height: 120px;
+        height: 90px; /* 移动端更小的缩略图 */
     }
     
     .material-preview-modal {

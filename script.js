@@ -77,7 +77,6 @@ let currentTextData = {
     height: 4,
     size: 3,
     color: "#000000",
-    font: "'Noto Sans SC', sans-serif",
     hAlign: "center",
     vAlign: "center",
     x: 15,
@@ -320,12 +319,53 @@ function init() {
 
     // 添加素材库按钮点击事件
     setupMaterialLibrary();
+
+    initColorInputSync();
+}
+
+// 定义初始化颜色输入同步的函数
+function initColorInputSync() {
+    setupColorSync('widgetBgColorHex', 'widgetBgColor');
+    setupColorSync('textColorHex', 'textColor');
+    setupColorSync('shapeColorHex', 'shapeColor');
+    setupColorSync('moduleColorHex', 'moduleTextColor');
+    setupColorSync('temperatureColorHex', 'temperatureTextColor');
+}
+
+// 通用的颜色同步设置函数
+function setupColorSync(hexInputId, colorPickerId) {
+    const hexInput = document.getElementById(hexInputId);
+    const colorPicker = document.getElementById(colorPickerId);
+
+    if (!hexInput || !colorPicker) return;
+
+    // HEX输入框 -> 颜色选择器
+    hexInput.addEventListener('input', function () {
+        const hexValue = this.value;
+        if (isValidHexColor(hexValue)) {
+            colorPicker.value = hexToColorPickerFormat(hexValue);
+
+            // 触发颜色选择器的input事件
+            const event = new Event('input');
+            colorPicker.dispatchEvent(event);
+        }
+    });
+
+    // 颜色选择器 -> HEX输入框
+    colorPicker.addEventListener('input', function () {
+        const colorValue = this.value;
+        hexInput.value = colorValue.toUpperCase();
+    });
+
+    // 初始同步
+    hexInput.value = colorPicker.value.toUpperCase();
 }
 
 // 设置素材库功能
 function setupMaterialLibrary() {
     const openBtn = document.getElementById('openMaterialLibraryBtn');
     const modal = document.getElementById('materialLibraryModal');
+    const closeBtn = document.getElementById('closeMaterialModal');
 
     if (!openBtn || !modal) return;
 
@@ -336,14 +376,15 @@ function setupMaterialLibrary() {
     });
 
     // 关闭模态框
-    modal.addEventListener('click', function (e) {
-        if (e.target === modal || e.target.classList.contains('close-modal')) {
-            modal.style.display = 'none';
-        }
+    modal.addEventListener('click', function () {
+        modal.style.display = 'none';
+    });
+    closeBtn.addEventListener('click', function () {
+        modal.style.display = 'none';
     });
 
     // 阻止模态框内容点击关闭
-    const modalContent = modal.querySelector('.modal-content');
+    const modalContent = modal.querySelector('.export-modal-content');
     if (modalContent) {
         modalContent.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -357,7 +398,7 @@ async function loadMaterialLibrary() {
     if (!modalContent) return;
 
     // 清空现有内容（除了标题）
-    const modalBody = modalContent.querySelector('.modal-body') || createModalBody(modalContent);
+    const modalBody = modalContent.querySelector('.material-modal-body') || createModalBody(modalContent);
     modalBody.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> 正在加载素材库...</div>';
 
     try {
@@ -415,9 +456,9 @@ async function loadMaterialLibrary() {
             modalBody.appendChild(gridContainer);
 
             // 添加标题显示素材数量
-            const modalTitle = modalContent.querySelector('.modal-title');
+            const modalTitle = modalContent.querySelector('.material-modal-title');
             if (modalTitle) {
-                modalTitle.innerHTML = `<i class="fas fa-box-open"></i> 素材库 (${imageCount}个素材)`;
+                modalTitle.innerHTML = `<i class="fas fa-box-open"></i> 素材库 (${imageCount})`;
             }
         }
 
@@ -427,9 +468,7 @@ async function loadMaterialLibrary() {
             <div class="error-message">
                 <i class="fas fa-exclamation-triangle"></i>
                 <p>加载素材库失败: ${error.message}</p>
-                <button onclick="loadMaterialLibrary()" class="retry-btn">
-                    <i class="fas fa-redo"></i> 重新加载
-                </button>
+                <button onclick="loadMaterialLibrary()" class="retry-btn">重新加载</button>
             </div>
         `;
     }
@@ -438,13 +477,13 @@ async function loadMaterialLibrary() {
 // 创建模态框内容区域
 function createModalBody(modalContent) {
     const modalBody = document.createElement('div');
-    modalBody.className = 'modal-body';
+    modalBody.className = 'material-modal-body';
     modalContent.appendChild(modalBody);
     return modalBody;
 }
 
 // 创建素材库项目
-function createMaterialLibraryItem(fileName, dataUrl, mimeType) {
+function createMaterialLibraryItem(fileName, dataUrl) {
     const item = document.createElement('div');
     item.className = 'material-library-item';
 
@@ -467,43 +506,19 @@ function createMaterialLibraryItem(fileName, dataUrl, mimeType) {
     name.className = 'material-library-name';
     name.textContent = getShortFileName(fileName);
 
-    // 创建操作按钮
-    const actions = document.createElement('div');
-    actions.className = 'material-library-actions';
-
-    // 添加按钮
-    const addBtn = document.createElement('button');
-    addBtn.className = 'material-library-add-btn';
-    addBtn.innerHTML = '<i class="fas fa-plus"></i> 添加';
-    addBtn.title = '添加到编辑器';
-
-    addBtn.addEventListener('click', function (e) {
+    // 点击整个素材项直接添加到编辑器
+    item.addEventListener('click', function (e) {
         e.stopPropagation();
         addMaterialFromLibrary(dataUrl, fileName);
-    });
-
-    // 预览按钮
-    const previewBtn = document.createElement('button');
-    previewBtn.className = 'material-library-preview-btn';
-    previewBtn.innerHTML = '<i class="fas fa-search"></i>';
-    previewBtn.title = '预览';
-
-    previewBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        showMaterialPreview(dataUrl, fileName);
-    });
-
-    actions.appendChild(addBtn);
-    actions.appendChild(previewBtn);
-
-    // 添加点击预览功能
-    thumbnail.addEventListener('click', function () {
-        showMaterialPreview(dataUrl, fileName);
+        // 关闭模态框
+        const modal = document.getElementById('materialLibraryModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
     });
 
     item.appendChild(thumbnail);
     item.appendChild(name);
-    item.appendChild(actions);
 
     return item;
 }
@@ -535,85 +550,7 @@ function addMaterialFromLibrary(dataUrl, fileName) {
         if (modal) {
             modal.style.display = 'none';
         }
-
-        // 显示成功消息
-        showNotification(`已添加素材: ${shortName}`, 'success');
     });
-}
-
-// 显示素材预览
-function showMaterialPreview(dataUrl, fileName) {
-    // 创建预览模态框
-    let previewModal = document.getElementById('materialPreviewModal');
-
-    if (!previewModal) {
-        previewModal = document.createElement('div');
-        previewModal.id = 'materialPreviewModal';
-        previewModal.className = 'modal';
-        previewModal.innerHTML = `
-            <div class="modal-content material-preview-modal">
-                <div class="modal-header">
-                    <h3 class="modal-title"><i class="fas fa-search"></i> 预览素材</h3>
-                    <span class="close-modal"><i class="fas fa-times"></i></span>
-                </div>
-                <div class="modal-body">
-                    <div class="material-preview-container">
-                        <img class="material-preview-image" src="${dataUrl}" alt="${fileName}">
-                    </div>
-                    <div class="material-preview-info">
-                        <p><strong>文件名:</strong> ${fileName}</p>
-                        <p><strong>尺寸:</strong> <span class="image-dimensions">计算中...</span></p>
-                    </div>
-                    <div class="material-preview-actions">
-                        <button class="btn-primary add-from-preview">
-                            <i class="fas fa-plus"></i> 添加到编辑器
-                        </button>
-                        <button class="btn-secondary close-preview">
-                            <i class="fas fa-times"></i> 关闭
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(previewModal);
-
-        // 绑定事件
-        previewModal.addEventListener('click', function (e) {
-            if (e.target === previewModal || e.target.closest('.close-modal') || e.target.closest('.close-preview')) {
-                previewModal.style.display = 'none';
-            }
-        });
-
-        const addBtn = previewModal.querySelector('.add-from-preview');
-        if (addBtn) {
-            addBtn.addEventListener('click', function () {
-                addMaterialFromLibrary(dataUrl, fileName);
-                previewModal.style.display = 'none';
-            });
-        }
-
-        // 计算图片尺寸
-        const img = previewModal.querySelector('.material-preview-image');
-        const dimensionsSpan = previewModal.querySelector('.image-dimensions');
-
-        img.onload = function () {
-            dimensionsSpan.textContent = `${img.naturalWidth} × ${img.naturalHeight} 像素`;
-        };
-    } else {
-        // 更新现有模态框
-        const img = previewModal.querySelector('.material-preview-image');
-        const dimensionsSpan = previewModal.querySelector('.image-dimensions');
-
-        img.src = dataUrl;
-        img.alt = fileName;
-        dimensionsSpan.textContent = '计算中...';
-
-        img.onload = function () {
-            dimensionsSpan.textContent = `${img.naturalWidth} × ${img.naturalHeight} 像素`;
-        };
-    }
-
-    previewModal.style.display = 'flex';
 }
 
 // 获取短文件名
@@ -623,34 +560,6 @@ function getShortFileName(fileName) {
         return name.substring(0, 17) + '...';
     }
     return name;
-}
-
-// 显示通知
-function showNotification(message, type = 'info') {
-    // 创建通知元素
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
-        <span>${message}</span>
-    `;
-
-    document.body.appendChild(notification);
-
-    // 显示通知
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 10);
-
-    // 3秒后隐藏并移除
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
 }
 
 // 加载默认时钟图片并转换为base64
@@ -1353,7 +1262,6 @@ function copyTextElement() {
         height: textData.height,
         size: textData.size,
         color: textData.color,
-        font: textData.font,
         x: textData.x,
         y: textData.y,
         rotation: textData.rotation,
@@ -1535,7 +1443,6 @@ function pasteTextElement(x, y) {
     textData.height = copiedElementData.height;
     textData.size = copiedElementData.size;
     textData.color = copiedElementData.color;
-    textData.font = copiedElementData.font;
     textData.x = x;
     textData.y = y;
     textData.rotation = copiedElementData.rotation;
@@ -2749,7 +2656,6 @@ function addTextElement() {
         height: 4,
         size: 3,
         color: "#000000",
-        font: "'Noto Sans SC', sans-serif",
         hAlign: "center",
         vAlign: "center",
         x: 15,
@@ -3319,7 +3225,6 @@ function addModuleElement(type) {
         hAlign: "center",
         vAlign: "center",
         role_color: "on_surface",
-        text_font: "Birthstone-Regular.ttf"
     };
 
     if (type === 'calendar') {
@@ -4082,12 +3987,11 @@ function applyTextStyle(element, textData) {
     const fontSizePx = calculateFontSizeFromGrid(textData.size);
     element.style.fontSize = `${fontSizePx}px`;
     element.style.color = textData.color;
-    element.style.fontFamily = textData.font;
     element.style.opacity = textData.opacity / 100;
     element.style.transform = `rotate(${textData.rotation}deg)`;
     element.style.zIndex = textData.zIndex;
     element.style.display = textData.enabled ? 'inline-flex' : 'none';
-    // 新增：应用对齐样式
+    // 应用对齐样式
     element.style.justifyContent =
         textData.hAlign === 'left' ? 'flex-start' :
             textData.hAlign === 'right' ? 'flex-end' : 'center';
@@ -4363,7 +4267,6 @@ function updateTextPropertiesPanel(element) {
         currentTextData.height = gridHeight;
         currentTextData.size = textData.size;
         currentTextData.color = textData.color;
-        currentTextData.font = textData.font;
         currentTextData.x = textData.x;
         currentTextData.y = textData.y;
         currentTextData.rotation = textData.rotation;
@@ -4377,7 +4280,7 @@ function updateTextPropertiesPanel(element) {
         document.getElementById('textHeight').value = currentTextData.height;
         document.getElementById('textSize').value = currentTextData.size;
         document.getElementById('textColor').value = currentTextData.color;
-        document.getElementById('textFont').value = currentTextData.font;
+        document.getElementById('textColorHex').value = currentTextData.color.toUpperCase();
         document.getElementById('textX').value = currentTextData.x;
         document.getElementById('textY').value = currentTextData.y;
         document.getElementById('textRotation').value = currentTextData.rotation;
@@ -4414,7 +4317,7 @@ function updateShapePropertiesPanel(element) {
         currentShapeData.opacity = shapeData.opacity;
         currentShapeData.zIndex = shapeData.zIndex;
 
-        // 新增：渐变属性
+        // 渐变属性
         currentShapeData.gradient = shapeData.gradient || null;
         currentShapeData.gradientType = shapeData.gradientType || 'linear';
         currentShapeData.gradientStops = shapeData.gradientStops || [
@@ -4444,6 +4347,7 @@ function updateShapePropertiesPanel(element) {
         document.getElementById('shapeWidth').value = currentShapeData.width;
         document.getElementById('shapeHeight').value = currentShapeData.height;
         document.getElementById('shapeColor').value = currentShapeData.color;
+        document.getElementById('shapeColorHex').value = currentShapeData.color.toUpperCase();
         document.getElementById('shapeX').value = currentShapeData.x;
         document.getElementById('shapeY').value = currentShapeData.y;
         document.getElementById('shapeRotation').value = currentShapeData.rotation;
@@ -4496,6 +4400,7 @@ function updateModulePropertiesPanel(element) {
         document.getElementById('moduleHeight').value = currentModuleData.height;
         document.getElementById('moduleTextSize').value = currentModuleData.textSize;
         document.getElementById('moduleTextColor').value = currentModuleData.textColor;
+        document.getElementById('moduleColorHex').value = currentModuleData.textColor.toUpperCase();
         document.getElementById('moduleX').value = currentModuleData.x;
         document.getElementById('moduleY').value = currentModuleData.y;
 
@@ -4799,6 +4704,9 @@ function updateTemperaturePropertiesPanel(element) {
 
         const colorInput = document.getElementById('temperatureTextColor');
         if (colorInput) colorInput.value = currentTemperatureData.textColor;
+
+        const colorHexInput = document.getElementById('temperatureColorHex');
+        if (colorHexInput) colorHexInput.value = currentTemperatureData.textColor.toUpperCase();
 
         const contentInput = document.getElementById('temperatureContent');
         if (contentInput) contentInput.value = currentTemperatureData.content;
@@ -5244,7 +5152,6 @@ function updateWidgetDataViews() {
                         text_size: module.textSize || 3,
                         text_color: module.textColor || "#000000",
                         role_color: "on_surface",
-                        text_font: "Birthstone-Regular.ttf",
                         position: {
                             x: x,
                             y: y,
@@ -6141,7 +6048,34 @@ function updateZoomDisplay() {
     zoomLevel.textContent = `${currentZoom}%`;
 }
 
-// 新增一个辅助函数，用于将任意格式的图片转换为PNG
+// 辅助函数：验证HEX颜色格式
+function isValidHexColor(color) {
+    // 支持格式：#RGB, #RRGGBB
+    const hexPattern = /^#([A-Fa-f0-9]{3}){1,2}$/;
+    return hexPattern.test(color);
+}
+
+// 辅助函数：将HEX格式转换为颜色选择器格式（去掉#）
+function hexToColorPickerFormat(hex) {
+    // 如果格式是#RGB，转换为#RRGGBB
+    if (hex.length === 4) {
+        const r = hex[1];
+        const g = hex[2];
+        const b = hex[3];
+        return `#${r}${r}${g}${g}${b}${b}`;
+    }
+    return hex;
+}
+
+// 辅助函数：将颜色选择器格式转换为HEX格式（确保有#）
+function colorPickerToHexFormat(color) {
+    if (!color.startsWith('#')) {
+        return '#' + color;
+    }
+    return color;
+}
+
+// 辅助函数：用于将任意格式的图片转换为PNG
 async function convertImageToPNG(dataUrl) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -6355,6 +6289,136 @@ async function generateExportZip() {
 
 // 设置事件监听器
 function setupEventListeners() {
+    // 背景颜色同步
+    const widgetBgColorHex = document.getElementById('widgetBgColorHex');
+    const widgetBgColor = document.getElementById('widgetBgColor');
+    if (widgetBgColorHex && widgetBgColor) {
+        // HEX输入框 -> 颜色选择器
+        widgetBgColorHex.addEventListener('input', function () {
+            const hexValue = this.value;
+            if (isValidHexColor(hexValue)) {
+                widgetBgColor.value = hexToColorPickerFormat(hexValue);
+
+                // 触发颜色选择器的input事件以应用颜色
+                const event = new Event('input');
+                widgetBgColor.dispatchEvent(event);
+            }
+        });
+
+        // 颜色选择器 -> HEX输入框
+        widgetBgColor.addEventListener('input', function () {
+            const colorValue = this.value;
+            widgetBgColorHex.value = colorValue.toUpperCase();
+        });
+
+        // 初始同步
+        widgetBgColorHex.value = widgetBgColor.value.toUpperCase();
+    }
+
+    // 文字颜色同步
+    const textColorHex = document.getElementById('textColorHex');
+    const textColor = document.getElementById('textColor');
+    if (textColorHex && textColor) {
+        // HEX输入框 -> 颜色选择器
+        textColorHex.addEventListener('input', function () {
+            const hexValue = this.value;
+            if (isValidHexColor(hexValue)) {
+                textColor.value = hexToColorPickerFormat(hexValue);
+
+                // 触发颜色选择器的input事件以应用颜色
+                const event = new Event('input');
+                textColor.dispatchEvent(event);
+            }
+        });
+
+        // 颜色选择器 -> HEX输入框
+        textColor.addEventListener('input', function () {
+            const colorValue = this.value;
+            textColorHex.value = colorValue.toUpperCase();
+        });
+
+        // 初始同步
+        textColorHex.value = textColor.value.toUpperCase();
+    }
+
+    // 形状颜色同步
+    const shapeColorHex = document.getElementById('shapeColorHex');
+    const shapeColor = document.getElementById('shapeColor');
+    if (shapeColorHex && shapeColor) {
+        // HEX输入框 -> 颜色选择器
+        shapeColorHex.addEventListener('input', function () {
+            const hexValue = this.value;
+            if (isValidHexColor(hexValue)) {
+                shapeColor.value = hexToColorPickerFormat(hexValue);
+
+                // 触发颜色选择器的input事件以应用颜色
+                const event = new Event('input');
+                shapeColor.dispatchEvent(event);
+            }
+        });
+
+        // 颜色选择器 -> HEX输入框
+        shapeColor.addEventListener('input', function () {
+            const colorValue = this.value;
+            shapeColorHex.value = colorValue.toUpperCase();
+        });
+
+        // 初始同步
+        shapeColorHex.value = shapeColor.value.toUpperCase();
+    }
+
+    // 模块文字颜色同步
+    const moduleColorHex = document.getElementById('moduleColorHex');
+    const moduleTextColor = document.getElementById('moduleTextColor');
+    if (moduleColorHex && moduleTextColor) {
+        // HEX输入框 -> 颜色选择器
+        moduleColorHex.addEventListener('input', function () {
+            const hexValue = this.value;
+            if (isValidHexColor(hexValue)) {
+                moduleTextColor.value = hexToColorPickerFormat(hexValue);
+
+                // 触发颜色选择器的input事件以应用颜色
+                const event = new Event('input');
+                moduleTextColor.dispatchEvent(event);
+            }
+        });
+
+        // 颜色选择器 -> HEX输入框
+        moduleTextColor.addEventListener('input', function () {
+            const colorValue = this.value;
+            moduleColorHex.value = colorValue.toUpperCase();
+        });
+
+        // 初始同步
+        moduleColorHex.value = moduleTextColor.value.toUpperCase();
+    }
+
+    // 温度文字颜色同步
+    const temperatureColorHex = document.getElementById('temperatureColorHex');
+    const temperatureTextColor = document.getElementById('temperatureTextColor');
+    if (temperatureColorHex && temperatureTextColor) {
+        // HEX输入框 -> 颜色选择器
+        temperatureColorHex.addEventListener('input', function () {
+            const hexValue = this.value;
+            if (isValidHexColor(hexValue)) {
+                temperatureTextColor.value = hexToColorPickerFormat(hexValue);
+
+                // 触发颜色选择器的input事件以应用颜色
+                const event = new Event('input');
+                temperatureTextColor.dispatchEvent(event);
+            }
+        });
+
+        // 颜色选择器 -> HEX输入框
+        temperatureTextColor.addEventListener('input', function () {
+            const colorValue = this.value;
+            temperatureColorHex.value = colorValue.toUpperCase();
+        });
+
+        // 初始同步
+        temperatureColorHex.value = temperatureTextColor.value.toUpperCase();
+    }
+
     // 切换辅助线显示
     document.getElementById('toggleGuides').addEventListener('click', function () {
         guidesVisible = !guidesVisible;
@@ -6940,22 +7004,6 @@ function setupEventListeners() {
             }
 
             currentTextData.color = color;
-            updateWidgetDataViews();
-        }
-    });
-
-    document.getElementById('textFont').addEventListener('change', function () {
-        if (selectedElement && selectedElement.dataset.type === 'text') {
-            const font = this.value;
-            selectedElement.style.fontFamily = font;
-
-            // 更新对应的text数据
-            const textData = textElements.find(t => t.id === currentTextData.id);
-            if (textData) {
-                textData.font = font;
-            }
-
-            currentTextData.font = font;
             updateWidgetDataViews();
         }
     });
@@ -8078,7 +8126,6 @@ function drawWidgetToCanvas(ctx, width, height) {
             ctx.globalAlpha = opacity;
 
             // 设置文字样式
-            ctx.font = `${module.textSize || 24}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -8169,7 +8216,6 @@ function drawWidgetToCanvas(ctx, width, height) {
             ctx.rotate(rotation * Math.PI / 180);
 
             // 设置文字样式
-            ctx.font = `${text.size}px ${text.font}`;
             ctx.fillStyle = text.color;
             ctx.textBaseline = 'top';
 

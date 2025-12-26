@@ -64,7 +64,7 @@
                     <!-- 素材和文字分类 -->
                     <div class="materials-category">
                         <div class="section-title">
-                            <i class="fas fa-shapes"></i> 导入素材 | 文字
+                            <i class="fas fa-shapes"></i> 导入素材 | 素材库 | 文字
                         </div>
                         <div class="materials">
                             <div class="material material-upload" id="uploadMaterialBtn">
@@ -407,6 +407,7 @@
                         <!-- 纯色背景 -->
                         <div class="property-row">
                             <span class="property-label">背景颜色</span>
+                            <input type="text" id="widgetBgColorHex" style="width: 80px;height: 26px;" value="#FFFFFF">
                             <input type="color" id="widgetBgColor" value="#ffffff">
                         </div>
 
@@ -549,7 +550,7 @@
                                 <!-- 垂直对齐按钮 -->
                                 <div class="alignment-btn-group" style="display: flex; gap: 2px; flex: 1;">
                                     <button class="alignment-btn" data-align="vertical" data-value="top" title="顶部对齐">
-                                        <i class="fas fa-align-left fa-rotate-90"></i>
+                                        <i class="fas fa-align-right fa-rotate-90"></i>
                                     </button>
                                     <button class="alignment-btn active" data-align="vertical" data-value="center"
                                         title="垂直居中">
@@ -557,7 +558,7 @@
                                     </button>
                                     <button class="alignment-btn" data-align="vertical" data-value="bottom"
                                         title="底部对齐">
-                                        <i class="fas fa-align-right fa-rotate-90"></i>
+                                        <i class="fas fa-align-left fa-rotate-90"></i>
                                     </button>
                                 </div>
                             </div>
@@ -575,18 +576,9 @@
                             <input type="number" id="textSize" min="0.5" max="30" value="3" step="0.5">
                         </div>
                         <div class="property-row">
-                            <span class="property-label">颜色</span>
+                            <span class="property-label">文字颜色</span>
+                            <input type="text" id="textColorHex" style="width: 80px;height: 26px;" value="#000000">
                             <input type="color" id="textColor" value="#000000">
-                        </div>
-                        <div class="property-row">
-                            <span class="property-label">字体</span>
-                            <select id="textFont">
-                                <option value="'Segoe UI', sans-serif">Segoe UI</option>
-                                <option value="'Noto Sans SC', sans-serif" selected>Noto Sans SC</option>
-                                <option value="Arial, sans-serif">Arial</option>
-                                <option value="'Times New Roman', serif">Times New Roman</option>
-                                <option value="'Courier New', monospace">Courier New</option>
-                            </select>
                         </div>
                         <div class="property-row">
                             <span class="property-label">X位置(格子)</span>
@@ -638,8 +630,9 @@
                             <input type="number" id="shapeHeight" min="1" max="30" value="5" step="1">
                         </div>
                         <div class="property-row">
-                            <span class="property-label">颜色</span>
-                            <input type="color" id="shapeColor" value="#6a89cc" style="margin-left: 10px;">
+                            <span class="property-label">形状颜色</span>
+                            <input type="text" id="shapeColorHex" style="width: 80px;height: 26px;" value="#6a89cc">
+                            <input type="color" id="shapeColor" value="#6a89cc">
                         </div>
                         <div class="gradient-editor" id="shapeGradientEditor">
                             <div class="property-label" style="margin-bottom: 10px;">渐变</div>
@@ -720,7 +713,7 @@
                                 <!-- 垂直对齐按钮 -->
                                 <div class="alignment-btn-group" style="display: flex; gap: 2px; flex: 1;">
                                     <button class="alignment-btn" data-align="vertical" data-value="top" title="顶部对齐">
-                                        <i class="fas fa-align-left fa-rotate-90"></i>
+                                        <i class="fas fa-align-right fa-rotate-90"></i>
                                     </button>
                                     <button class="alignment-btn active" data-align="vertical" data-value="center"
                                         title="垂直居中">
@@ -728,7 +721,7 @@
                                     </button>
                                     <button class="alignment-btn" data-align="vertical" data-value="bottom"
                                         title="底部对齐">
-                                        <i class="fas fa-align-right fa-rotate-90"></i>
+                                        <i class="fas fa-align-left fa-rotate-90"></i>
                                     </button>
                                 </div>
                             </div>
@@ -767,7 +760,8 @@
                             <input type="number" id="moduleTextSize" min="0.5" max="30" value="3" step="0.5">
                         </div>
                         <div class="property-row">
-                            <span class="property-label">字体颜色</span>
+                            <span class="property-label">文字颜色</span>
+                            <input type="text" id="moduleColorHex" style="width: 80px;height: 26px;" value="#000000">
                             <input type="color" id="moduleTextColor" value="#000000">
                         </div>
                         <div class="property-row">
@@ -980,6 +974,7 @@
                         </div>
                         <div class="property-row">
                             <span class="property-label">文字颜色</span>
+                            <input type="text" id="temperatureColorHex" style="width: 80px;height: 26px;" value="#000000">
                             <input type="color" id="temperatureTextColor" value="#000000">
                         </div>
                         <div class="property-row">
@@ -1007,7 +1002,7 @@
                                 <!-- 垂直对齐按钮 -->
                                 <div class="alignment-btn-group" style="display: flex; gap: 2px; flex: 1;">
                                     <button class="alignment-btn" data-align="vertical" data-value="top" title="顶部对齐">
-                                        <i class="fas fa-align-left fa-rotate-90"></i>
+                                        <i class="fas fa-align-right fa-rotate-90"></i>
                                     </button>
                                     <button class="alignment-btn active" data-align="vertical" data-value="center"
                                         title="垂直居中">
@@ -1015,7 +1010,7 @@
                                     </button>
                                     <button class="alignment-btn" data-align="vertical" data-value="bottom"
                                         title="底部对齐">
-                                        <i class="fas fa-align-right fa-rotate-90"></i>
+                                        <i class="fas fa-align-left fa-rotate-90"></i>
                                     </button>
                                 </div>
                             </div>
@@ -1035,11 +1030,11 @@
     </div>
 
     <!-- 导出配置模态框 -->
-    <div class="modal" id="exportModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-file-export"></i> 导出配置</h3>
-                <button class="close-modal" id="closeExportModal">&times;</button>
+    <div class="export-modal" id="exportModal">
+        <div class="export-modal-content">
+            <div class="export-modal-header">
+                <h3 class="export-modal-title"><i class="fas fa-file-export"></i> 导出配置</h3>
+                <button class="export-close-modal" id="closeExportModal">&times;</button>
             </div>
 
             <div class="export-modal-body">
@@ -1109,10 +1104,11 @@
     </div>
 
     <!-- 素材库模态框 -->
-    <div class="modal" id="materialLibraryModal">
-        <div class="modal-content material-library-modal">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-box-open"></i> 素材库</h3>
+    <div class="export-modal" id="materialLibraryModal">
+        <div class="export-modal-content material-library-modal">
+            <div class="material-modal-header">
+                <h3 class="material-modal-title"><i class="fas fa-box-open"></i> 素材库</h3>
+                <button class="export-close-modal" id="closeMaterialModal">&times;</button>
             </div>
         </div>
     </div>
