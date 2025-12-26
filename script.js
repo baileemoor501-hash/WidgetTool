@@ -1,5 +1,5 @@
 // 全局变量
-let currentZoom = 100; // 当前缩放级别（百分比）
+let currentZoom = 100; // widget缩放百分比
 let guidesVisible = true; // 辅助线是否显示
 let selectedElement = null; // 当前选中的元素
 let uploadedMaterials = []; // 已上传的素材数组
@@ -81,8 +81,6 @@ let currentTextData = {
     vAlign: "center",
     x: 15,
     y: 15,
-    rotation: 0,
-    opacity: 100,
     zIndex: 10
 };
 
@@ -133,8 +131,6 @@ let currentWeatherIconData = {
     height: 5,
     x: 15,
     y: 15,
-    rotation: 0,
-    opacity: 100,
     zIndex: 10,
     imageUrl: './resources/weather.png' // 默认图片路径
 };
@@ -260,7 +256,7 @@ function init() {
 
     loadDefaultClockImages();
 
-    // 更新widgetData中的views
+    // 更新widgetData
     updateWidgetDataViews();
 
     // 添加背景上传容器点击事件
@@ -376,9 +372,6 @@ function setupMaterialLibrary() {
     });
 
     // 关闭模态框
-    modal.addEventListener('click', function () {
-        modal.style.display = 'none';
-    });
     closeBtn.addEventListener('click', function () {
         modal.style.display = 'none';
     });
@@ -424,10 +417,8 @@ async function loadMaterialLibrary() {
             // 只处理图片文件
             if (!zipEntry.dir && /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(relativePath)) {
                 imageCount++;
-
                 const fileData = await zipEntry.async('blob');
                 const reader = new FileReader();
-
                 const promise = new Promise((resolve) => {
                     reader.onload = function (e) {
                         // 创建素材项
@@ -441,7 +432,6 @@ async function loadMaterialLibrary() {
                     };
                     reader.readAsDataURL(fileData);
                 });
-
                 imagePromises.push(promise);
             }
         });
@@ -872,12 +862,10 @@ function setupTemperatureEventListeners() {
                 const validWidth = Math.max(1, Math.min(30, gridWidth));
                 applyElementSize(selectedElement, validWidth, currentTemperatureData.height, 'temperature');
                 currentTemperatureData.width = validWidth;
-
                 const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                 if (temperatureData) {
                     temperatureData.width = validWidth;
                 }
-
                 updateWidgetDataViews();
             }
         });
@@ -892,12 +880,10 @@ function setupTemperatureEventListeners() {
                 const validHeight = Math.max(1, Math.min(30, gridHeight));
                 applyElementSize(selectedElement, currentTemperatureData.width, validHeight, 'temperature');
                 currentTemperatureData.height = validHeight;
-
                 const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                 if (temperatureData) {
                     temperatureData.height = validHeight;
                 }
-
                 updateWidgetDataViews();
             }
         });
@@ -913,12 +899,10 @@ function setupTemperatureEventListeners() {
                 const validX = Math.max(0, Math.min(gridSize.x, x));
                 applyElementPosition(selectedElement, validX, currentTemperatureData.y);
                 currentTemperatureData.x = validX;
-
                 const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                 if (temperatureData) {
                     temperatureData.x = validX;
                 }
-
                 updateWidgetDataViews();
             }
         });
@@ -934,12 +918,10 @@ function setupTemperatureEventListeners() {
                 const validY = Math.max(0, Math.min(gridSize.y, y));
                 applyElementPosition(selectedElement, currentTemperatureData.x, validY);
                 currentTemperatureData.y = validY;
-
                 const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                 if (temperatureData) {
                     temperatureData.y = validY;
                 }
-
                 updateWidgetDataViews();
             }
         });
@@ -957,13 +939,11 @@ function setupTemperatureEventListeners() {
                 }
                 const validSize = Math.min(Math.max(0.5, textSize), 30);
                 currentTemperatureData.textSize = validSize;
-
                 const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                 if (temperatureData) {
                     temperatureData.textSize = validSize;
                     applyTemperatureStyle(temperatureData.element, temperatureData);
                 }
-
                 this.value = validSize;
                 updateWidgetDataViews();
             }
@@ -977,13 +957,11 @@ function setupTemperatureEventListeners() {
             if (selectedElement && selectedElement.dataset.type === 'temperature') {
                 const textColor = this.value;
                 currentTemperatureData.textColor = textColor;
-
                 const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                 if (temperatureData) {
                     temperatureData.textColor = textColor;
                     applyTemperatureStyle(temperatureData.element, temperatureData);
                 }
-
                 updateWidgetDataViews();
             }
         });
@@ -999,12 +977,10 @@ function setupTemperatureEventListeners() {
                 if (contentSpan) {
                     contentSpan.textContent = content;
                 }
-
                 currentTemperatureData.content = content;
                 const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                 if (temperatureData) {
                     temperatureData.content = content;
-
                     // 更新温度列表中的预览
                     const temperatureItem = document.querySelector(`.temperature-material[data-id="${temperatureData.id}"] .temperature-content`);
                     if (temperatureItem) {
@@ -1012,7 +988,6 @@ function setupTemperatureEventListeners() {
                             content.substring(0, 18) + '...' : content;
                     }
                 }
-
                 updateWidgetDataViews();
             }
         });
@@ -1024,19 +999,16 @@ function setupTemperatureEventListeners() {
             if (selectedElement && selectedElement.dataset.type === 'temperature') {
                 const align = this.dataset.align;
                 const value = this.dataset.value;
-
                 // 更新按钮状态
                 updateAlignmentButtons('temperature',
                     align === 'horizontal' ? value : currentTemperatureData.hAlign,
                     align === 'vertical' ? value : currentTemperatureData.vAlign
                 );
-
                 if (align === 'horizontal') {
                     currentTemperatureData.hAlign = value;
                 } else {
                     currentTemperatureData.vAlign = value;
                 }
-
                 const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                 if (temperatureData) {
                     if (align === 'horizontal') {
@@ -1046,7 +1018,6 @@ function setupTemperatureEventListeners() {
                     }
                     applyTemperatureStyle(temperatureData.element, temperatureData);
                 }
-
                 updateWidgetDataViews();
             }
         });
@@ -1060,12 +1031,10 @@ function setupTemperatureEventListeners() {
                 const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
                 selectedElement.style.zIndex = currentZIndex + 1;
                 currentTemperatureData.zIndex = currentZIndex + 1;
-
                 const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                 if (temperatureData) {
                     temperatureData.zIndex = currentZIndex + 1;
                 }
-
                 updateWidgetDataViews();
             }
         });
@@ -1080,1248 +1049,15 @@ function setupTemperatureEventListeners() {
                 if (currentZIndex > 1) {
                     selectedElement.style.zIndex = currentZIndex - 1;
                     currentTemperatureData.zIndex = currentZIndex - 1;
-
                     const temperatureData = temperatureElements.find(t => t.id === currentTemperatureData.id);
                     if (temperatureData) {
                         temperatureData.zIndex = currentZIndex - 1;
                     }
-
                     updateWidgetDataViews();
                 }
             }
         });
     }
-}
-
-// 初始化右键菜单
-function initContextMenu() {
-    const contextMenu = document.getElementById('contextMenu');
-    // 为所有可编辑元素添加右键菜单
-    document.addEventListener('contextmenu', function (e) {
-        // 检查点击的是否是可编辑元素
-        const target = e.target;
-        const isElement = target.closest('.draggable-element, .text-element, .shape-element, .module-element, #widgetContainer');
-
-        if (isElement) {
-            e.preventDefault();
-
-            // 如果是widget容器，但点击的不是widget内容，不显示菜单
-            if (target.id === 'widgetContainer' && !target.classList.contains('selected')) {
-                return;
-            }
-
-            // 显示右键菜单
-            contextMenu.style.display = 'block';
-            contextMenu.style.left = e.pageX + 'px';
-            contextMenu.style.top = e.pageY + 'px';
-
-            // 如果当前没有选中任何元素，选中点击的元素
-            if (isElement !== selectedElement) {
-                if (isElement.classList.contains('draggable-element')) {
-                    selectMaterialElement(isElement.id);
-                } else if (isElement.classList.contains('text-element')) {
-                    if (isElement.classList.contains('module-element')) {
-                        selectModuleElement(isElement.id);
-                    } else {
-                        selectTextElement(isElement.id);
-                    }
-                } else if (isElement.classList.contains('shape-element')) {
-                    selectShapeElement(isElement.id);
-                } else if (isElement.classList.contains('weather-icon-element')) {
-                    selectWeatherIconElement(isElement.id);
-                } else if (isElement.classList.contains('temperature-element')) {
-                    selectTemperatureElement(isElement.id);
-                } else if (isElement.id === 'widgetContainer') {
-                    selectWidget();
-                } else if (isElement.classList.contains('analog-clock-element')) {
-                    selectAnalogClockElement(isElement.id);
-                }
-            }
-
-            // 更新粘贴按钮状态
-            const pasteBtn = document.getElementById('pasteElement');
-            pasteBtn.style.opacity = copiedElementData ? '1' : '0.5';
-            pasteBtn.style.pointerEvents = copiedElementData ? 'auto' : 'none';
-        }
-    });
-
-    // 点击其他地方隐藏右键菜单
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('.context-menu')) {
-            contextMenu.style.display = 'none';
-        }
-    });
-
-    // 复制菜单项
-    document.getElementById('copyElement').addEventListener('click', function () {
-        copySelectedElement();
-        contextMenu.style.display = 'none';
-    });
-
-    // 粘贴菜单项
-    document.getElementById('pasteElement').addEventListener('click', function () {
-        pasteElement();
-        contextMenu.style.display = 'none';
-    });
-
-    // 删除菜单项
-    document.getElementById('deleteElement').addEventListener('click', function () {
-        deleteSelectedElement();
-        contextMenu.style.display = 'none';
-    });
-
-    // 添加快捷键支持
-    document.addEventListener('keydown', function (e) {
-        // Ctrl+C 复制
-        if (e.ctrlKey && e.key === 'c') {
-            e.preventDefault();
-            copySelectedElement();
-        }
-
-        // Ctrl+V 粘贴
-        if (e.ctrlKey && e.key === 'v') {
-            e.preventDefault();
-            pasteElement();
-        }
-
-        // Delete 键删除
-        if (e.key === 'Delete') {
-            e.preventDefault();
-            deleteSelectedElement();
-        }
-    });
-}
-
-// 复制选中的元素
-function copySelectedElement() {
-    if (!selectedElement) {
-        console.warn('没有选中任何元素');
-        return;
-    }
-
-    const elementType = selectedElement.dataset.type;
-
-    switch (elementType) {
-        case 'material':
-            copyMaterialElement();
-            break;
-        case 'text':
-            copyTextElement();
-            break;
-        case 'shape':
-            copyShapeElement();
-            break;
-        case 'module':
-            copyModuleElement();
-            break;
-        case 'analog-clock':
-            copyAnalogClockElement();
-            break;
-        case 'weather-icon':
-            copyWeatherIconElement();
-            break;
-        case 'temperature':
-            copyTemperatureElement();
-            break;
-        default:
-            console.warn('不支持复制该类型元素:', elementType);
-    }
-}
-
-// 复制素材元素
-function copyMaterialElement() {
-    const material = uploadedMaterials.find(m => m.id === selectedElement.id);
-    if (!material) return;
-
-    copiedElementType = 'material';
-    copiedElementData = {
-        name: material.name + ' - 副本',
-        dataUrl: material.dataUrl,
-        // 修改这里：从元素的dataset获取最新的网格尺寸
-        gridWidth: parseInt(selectedElement.dataset.gridWidth) || material.gridWidth,
-        gridHeight: parseInt(selectedElement.dataset.gridHeight) || material.gridHeight,
-        x: parseInt(selectedElement.dataset.x) || 0,
-        y: parseInt(selectedElement.dataset.y) || 0,
-        rotation: parseInt(selectedElement.style.transform?.match(/rotate\(([^)]+)deg\)/)?.[1] || 0),
-        opacity: parseFloat(selectedElement.style.opacity || 1) * 100,
-        enabled: selectedElement.style.display !== 'none',
-        zIndex: parseInt(selectedElement.style.zIndex || 10)
-    };
-}
-
-// 复制文字元素
-function copyTextElement() {
-    const textData = textElements.find(t => t.id === selectedElement.id);
-    if (!textData) return;
-
-    copiedElementType = 'text';
-    copiedElementData = {
-        name: textData.name + ' - 副本',
-        content: textData.content,
-        width: textData.width,
-        height: textData.height,
-        size: textData.size,
-        color: textData.color,
-        x: textData.x,
-        y: textData.y,
-        rotation: textData.rotation,
-        opacity: textData.opacity,
-        enabled: textData.enabled,
-        zIndex: textData.zIndex
-    };
-}
-
-// 复制形状元素
-function copyShapeElement() {
-    const shapeData = shapeElements.find(s => s.id === selectedElement.id);
-    if (!shapeData) return;
-
-    copiedElementType = 'shape';
-    copiedElementData = {
-        name: shapeData.name + ' - 副本',
-        type: shapeData.type,
-        width: shapeData.width,
-        height: shapeData.height,
-        color: shapeData.color,
-        x: shapeData.x,
-        y: shapeData.y,
-        rotation: shapeData.rotation,
-        opacity: shapeData.opacity,
-        enabled: shapeData.enabled,
-        zIndex: shapeData.zIndex,
-        gradient: shapeData.gradient,
-        gradientType: shapeData.gradientType,
-        gradientStops: shapeData.gradientStops ? [...shapeData.gradientStops] : null
-    };
-}
-
-// 复制模块元素
-function copyModuleElement() {
-    const moduleData = moduleElements.find(m => m.id === selectedElement.id);
-    if (!moduleData) return;
-
-    copiedElementType = 'module';
-    copiedElementData = {
-        name: moduleData.name + ' - 副本',
-        type: moduleData.type,
-        content: moduleData.content,
-        width: moduleData.width,
-        height: moduleData.height,
-        x: moduleData.x,
-        y: moduleData.y,
-        textSize: moduleData.textSize,
-        textColor: moduleData.textColor,
-        dateFormat: moduleData.dateFormat,
-        enabled: moduleData.enabled,
-        zIndex: moduleData.zIndex
-    };
-}
-
-// 复制指针时钟元素
-function copyAnalogClockElement() {
-    const clockData = analogClockElements.find(c => c.id === selectedElement.id);
-    if (!clockData) return;
-
-    copiedElementType = 'analog-clock';
-    copiedElementData = {
-        name: clockData.name + ' - 副本',
-        width: clockData.width,
-        height: clockData.height,
-        x: clockData.x,
-        y: clockData.y,
-        enabled: clockData.enabled,
-        zIndex: clockData.zIndex,
-        dialImage: clockData.dialImage,
-        hourImage: clockData.hourImage,
-        minuteImage: clockData.minuteImage,
-        secondImage: clockData.secondImage,
-        dialDataUrl: clockData.dialDataUrl,
-        hourDataUrl: clockData.hourDataUrl,
-        minuteDataUrl: clockData.minuteDataUrl,
-        secondDataUrl: clockData.secondDataUrl
-    };
-}
-
-// 粘贴元素
-function pasteElement() {
-    if (!copiedElementData || !copiedElementType) {
-        console.warn('没有可粘贴的元素');
-        return;
-    }
-
-    // 计算偏移后的位置
-    const gridSize = getGridSize();
-
-    // 直接使用格子偏移（1-2个格子）
-    const gridOffsetX = 2;
-    const gridOffsetY = 2;
-
-    // 创建偏移后的位置
-    const offsetX = copiedElementData.x + gridOffsetX;
-    const offsetY = copiedElementData.y + gridOffsetY;
-
-    // 确保位置在widget范围内
-    const maxX = gridSize.x - (copiedElementData.gridWidth || copiedElementData.width || 5);
-    const maxY = gridSize.y - (copiedElementData.gridHeight || copiedElementData.height || 5);
-    const safeX = Math.max(0, Math.min(offsetX, maxX));
-    const safeY = Math.max(0, Math.min(offsetY, maxY));
-
-    switch (copiedElementType) {
-        case 'material':
-            pasteMaterialElement(safeX, safeY);
-            break;
-        case 'text':
-            pasteTextElement(safeX, safeY);
-            break;
-        case 'shape':
-            pasteShapeElement(safeX, safeY);
-            break;
-        case 'module':
-            pasteModuleElement(safeX, safeY);
-            break;
-        case 'analog-clock':
-            pasteAnalogClockElement(safeX, safeY);
-            break;
-    }
-}
-
-// 粘贴素材元素
-function pasteMaterialElement(x, y) {
-    // 创建一个新的File对象（模拟）
-    const byteString = atob(copiedElementData.dataUrl.split(',')[1]);
-    const mimeString = copiedElementData.dataUrl.split(',')[0].split(':')[1].split(';')[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-
-    for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-    }
-
-    const blob = new Blob([ab], { type: mimeString });
-    const file = new File([blob], copiedElementData.name, { type: mimeString });
-
-    // 处理上传
-    handleMaterialUpload(file).then(materialData => {
-        // 设置位置和属性
-        materialData.name = copiedElementData.name;
-        materialData.gridWidth = copiedElementData.gridWidth;
-        materialData.gridHeight = copiedElementData.gridHeight;
-        materialData.enabled = copiedElementData.enabled;
-
-        // 更新元素
-        if (materialData.element) {
-            applyElementPosition(materialData.element, x, y);
-            applyElementSize(materialData.element, copiedElementData.gridWidth, copiedElementData.gridHeight, 'material');
-            materialData.element.style.transform = `rotate(${copiedElementData.rotation}deg)`;
-            materialData.element.style.opacity = copiedElementData.opacity / 100;
-            materialData.element.style.zIndex = copiedElementData.zIndex;
-            materialData.element.style.display = copiedElementData.enabled ? 'flex' : 'none';
-
-            // 选中新创建的元素
-            selectMaterialElement(materialData.id);
-        }
-
-        // 更新数据
-        materialData.x = x;
-        materialData.y = y;
-        materialData.rotation = copiedElementData.rotation;
-        materialData.opacity = copiedElementData.opacity;
-        materialData.zIndex = copiedElementData.zIndex;
-
-        updateWidgetDataViews();
-    });
-}
-
-// 粘贴文字元素
-function pasteTextElement(x, y) {
-    const textData = addTextElement();
-
-    // 设置属性
-    textData.name = copiedElementData.name;
-    textData.content = copiedElementData.content;
-    textData.width = copiedElementData.width;
-    textData.height = copiedElementData.height;
-    textData.size = copiedElementData.size;
-    textData.color = copiedElementData.color;
-    textData.x = x;
-    textData.y = y;
-    textData.rotation = copiedElementData.rotation;
-    textData.opacity = copiedElementData.opacity;
-    textData.enabled = copiedElementData.enabled;
-    textData.zIndex = copiedElementData.zIndex;
-
-    // 更新元素
-    if (textData.element) {
-        applyElementPosition(textData.element, x, y);
-        applyElementSize(textData.element, copiedElementData.width, copiedElementData.height, 'text');
-        applyTextStyle(textData.element, textData);
-
-        // 选中新创建的元素
-        selectTextElement(textData.id);
-    }
-
-    updateWidgetDataViews();
-}
-
-// 粘贴形状元素
-function pasteShapeElement(x, y) {
-    const shapeData = addShapeElement(copiedElementData.type);
-
-    // 设置属性
-    shapeData.name = copiedElementData.name;
-    shapeData.width = copiedElementData.width;
-    shapeData.height = copiedElementData.height;
-    shapeData.color = copiedElementData.color;
-    shapeData.x = x;
-    shapeData.y = y;
-    shapeData.rotation = copiedElementData.rotation;
-    shapeData.opacity = copiedElementData.opacity;
-    shapeData.enabled = copiedElementData.enabled;
-    shapeData.zIndex = copiedElementData.zIndex;
-    shapeData.gradient = copiedElementData.gradient;
-    shapeData.gradientType = copiedElementData.gradientType;
-    shapeData.gradientStops = copiedElementData.gradientStops;
-
-    // 更新元素
-    if (shapeData.element) {
-        applyElementPosition(shapeData.element, x, y);
-        applyElementSize(shapeData.element, copiedElementData.width, copiedElementData.height, 'shape');
-        applyShapeStyle(shapeData.element, shapeData);
-
-        // 选中新创建的元素
-        selectShapeElement(shapeData.id);
-    }
-
-    updateWidgetDataViews();
-}
-
-// 粘贴模块元素
-function pasteModuleElement(x, y) {
-    const moduleData = addModuleElement(copiedElementData.type);
-
-    // 设置属性
-    moduleData.name = copiedElementData.name;
-    moduleData.content = copiedElementData.content;
-    moduleData.width = copiedElementData.width;
-    moduleData.height = copiedElementData.height;
-    moduleData.x = x;
-    moduleData.y = y;
-    moduleData.textSize = copiedElementData.textSize;
-    moduleData.textColor = copiedElementData.textColor;
-    moduleData.dateFormat = copiedElementData.dateFormat;
-    moduleData.enabled = copiedElementData.enabled;
-    moduleData.zIndex = copiedElementData.zIndex;
-
-    // 更新元素
-    if (moduleData.element) {
-        applyElementPosition(moduleData.element, x, y);
-        applyElementSize(moduleData.element, copiedElementData.width, copiedElementData.height, 'module');
-        applyModuleStyle(moduleData.element, moduleData);
-
-        // 选中新创建的元素
-        selectModuleElement(moduleData.id);
-    }
-
-    updateWidgetDataViews();
-}
-
-// 粘贴指针时钟元素
-function pasteAnalogClockElement(x, y) {
-    const clockData = addAnalogClockElement();
-
-    // 设置属性
-    clockData.name = copiedElementData.name;
-    clockData.width = copiedElementData.width;
-    clockData.height = copiedElementData.height;
-    clockData.x = x;
-    clockData.y = y;
-    clockData.enabled = copiedElementData.enabled;
-    clockData.zIndex = copiedElementData.zIndex;
-    clockData.dialImage = copiedElementData.dialImage;
-    clockData.hourImage = copiedElementData.hourImage;
-    clockData.minuteImage = copiedElementData.minuteImage;
-    clockData.secondImage = copiedElementData.secondImage;
-    clockData.dialDataUrl = copiedElementData.dialDataUrl;
-    clockData.hourDataUrl = copiedElementData.hourDataUrl;
-    clockData.minuteDataUrl = copiedElementData.minuteDataUrl;
-    clockData.secondDataUrl = copiedElementData.secondDataUrl;
-
-    // 更新元素
-    if (clockData.element) {
-        applyElementPosition(clockData.element, x, y);
-        applyElementSize(clockData.element, copiedElementData.width, copiedElementData.height, 'analog-clock');
-
-        // 更新图片
-        updateClockImageInElement(clockData.element, 'dial',
-            copiedElementData.dialDataUrl || copiedElementData.dialImage);
-        updateClockImageInElement(clockData.element, 'hour',
-            copiedElementData.hourDataUrl || copiedElementData.hourImage);
-        updateClockImageInElement(clockData.element, 'minute',
-            copiedElementData.minuteDataUrl || copiedElementData.minuteImage);
-        updateClockImageInElement(clockData.element, 'second',
-            copiedElementData.secondDataUrl || copiedElementData.secondImage);
-
-        // 选中新创建的元素
-        selectAnalogClockElement(clockData.id);
-    }
-
-    updateWidgetDataViews();
-}
-
-// 删除选中的元素
-function deleteSelectedElement() {
-    if (!selectedElement) {
-        console.warn('没有选中任何元素');
-        return;
-    }
-
-    const elementType = selectedElement.dataset.type;
-
-    switch (elementType) {
-        case 'material':
-            deleteMaterial(selectedElement.id);
-            break;
-        case 'text':
-            deleteText(selectedElement.id);
-            break;
-        case 'shape':
-            deleteShape(selectedElement.id);
-            break;
-        case 'module':
-            deleteModule(selectedElement.id);
-            break;
-        case 'analog-clock':
-            deleteAnalogClock(selectedElement.id);
-            break;
-        case 'weather-icon':
-            deleteWeatherIcon(selectedElement.id);
-            break;
-        case 'temperature':
-            deleteTemperature(selectedElement.id);
-            break;
-        default:
-            console.warn('不支持删除该类型元素:', elementType);
-    }
-}
-
-// 初始化渐变编辑器
-function initGradientEditor() {
-    // 初始化默认颜色停止点
-    gradientStops = [
-        { position: 0, color: '#BCEEFD', opacity: 100 },
-        { position: 100, color: '#FFDBDB', opacity: 100 }
-    ];
-
-    // 更新渐变预览
-    updateGradientPreview();
-
-    // 渲染颜色停止点
-    renderGradientStops();
-}
-
-function initShapeGradientEditor() {
-    currentShapeData.gradientStops = [
-        { position: 0, color: '#BCEEFD', opacity: 100 },
-        { position: 100, color: '#FFDBDB', opacity: 100 }
-    ];
-    currentShapeData.gradientType = 'linear';
-    updateShapeGradientPreview();
-    renderShapeGradientStops();
-}
-
-// 更新渐变预览
-function updateGradientPreview() {
-    if (gradientStops.length === 0) {
-        gradientPreview.style.background = 'transparent';
-        return;
-    }
-
-    // 根据渐变类型生成渐变字符串
-    let gradientString = '';
-    const sortedStops = [...gradientStops].sort((a, b) => a.position - b.position);
-
-    switch (currentGradientType) {
-        case 'linear':
-            gradientString = `linear-gradient(to right, ${sortedStops.map(stop =>
-                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
-            ).join(', ')})`;
-            break;
-        case 'radial':
-            gradientString = `radial-gradient(circle, ${sortedStops.map(stop =>
-                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
-            ).join(', ')})`;
-            break;
-    }
-
-    gradientPreview.style.background = gradientString;
-}
-
-function updateShapeGradientPreview() {
-    if (currentShapeData.gradientStops.length === 0) {
-        document.getElementById('shapeGradientPreview').style.background = 'transparent';
-        return;
-    }
-
-    let gradientString = '';
-    const sortedStops = [...currentShapeData.gradientStops].sort((a, b) => a.position - b.position);
-
-    switch (currentShapeData.gradientType) {
-        case 'linear':
-            gradientString = `linear-gradient(to right, ${sortedStops.map(stop =>
-                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
-            ).join(', ')})`;
-            break;
-        case 'radial':
-            gradientString = `radial-gradient(circle, ${sortedStops.map(stop =>
-                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
-            ).join(', ')})`;
-            break;
-    }
-
-    document.getElementById('shapeGradientPreview').style.background = gradientString;
-}
-
-// 十六进制颜色转RGB
-function hexToRgb(hex) {
-    // 移除#号
-    hex = hex.replace('#', '');
-
-    // 解析RGB值
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-
-    return { r, g, b };
-}
-
-// RGB转十六进制
-function rgbToHex(r, g, b) {
-    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
-
-// 渲染颜色停止点
-function renderGradientStops() {
-    // 清空容器
-    gradientStopsContainer.innerHTML = '';
-
-    // 按位置排序
-    const sortedStops = [...gradientStops].sort((a, b) => a.position - b.position);
-
-    sortedStops.forEach((stop, index) => {
-        const stopElement = document.createElement('div');
-        stopElement.className = 'gradient-stop';
-        stopElement.dataset.position = stop.position;
-        stopElement.dataset.color = stop.color;
-        stopElement.dataset.opacity = stop.opacity;
-
-        // 修复HTML结构
-        stopElement.innerHTML = `
-            <input type="number" class="stop-position" value="${stop.position}" min="0" max="100" step="1" style="width: 70px;">
-            <input type="color" class="stop-color" value="${stop.color}" style="width: 30px;">
-            <input type="text" class="stop-color-value" value="${stop.color}" maxlength="7" style="width: 70px;">
-            <input type="number" class="stop-opacity" value="${stop.opacity}" min="0" max="100" step="1" style="width: 70px;">
-            <button class="stop-remove" style="width: 20px; height: 20px;">×</button>
-        `;
-
-        gradientStopsContainer.appendChild(stopElement);
-    });
-
-    // 添加事件监听器
-    addGradientStopListeners();
-
-    // 更新预览
-    updateGradientPreview();
-}
-
-function renderShapeGradientStops() {
-    const container = document.getElementById('shapeGradientStopsContainer');
-    container.innerHTML = '';
-
-    const sortedStops = [...currentShapeData.gradientStops].sort((a, b) => a.position - b.position);
-
-    sortedStops.forEach((stop, index) => {
-        const stopElement = document.createElement('div');
-        stopElement.className = 'gradient-stop';
-        stopElement.dataset.index = index;
-
-        stopElement.innerHTML = `
-            <input type="number" class="stop-position" value="${stop.position}" min="0" max="100" step="1" style="width: 70px;">
-            <input type="color" class="stop-color" value="${stop.color}" style="width: 30px;">
-            <input type="text" class="stop-color-value" value="${stop.color}" maxlength="7" style="width: 70px;">
-            <input type="number" class="stop-opacity" value="${stop.opacity}" min="0" max="100" step="1" style="width: 70px;">
-            <button class="stop-remove" style="width: 20px; height: 20px;">×</button>
-        `;
-
-        container.appendChild(stopElement);
-    });
-
-    addShapeGradientStopListeners();
-    updateShapeGradientPreview();
-}
-
-// 添加颜色停止点事件监听器
-function addGradientStopListeners() {
-    // 位置输入
-    document.querySelectorAll('.stop-position').forEach(input => {
-        input.addEventListener('input', function () {
-            const stopElement = this.closest('.gradient-stop');
-            if (!stopElement) return;
-
-            // 通过停止点元素的数据属性来查找对应的停止点
-            const position = parseInt(stopElement.dataset.position);
-            const color = stopElement.dataset.color;
-            const opacity = parseInt(stopElement.dataset.opacity);
-
-            const index = gradientStops.findIndex(stop =>
-                stop.position === position && stop.color === color && stop.opacity === opacity
-            );
-
-            if (index !== -1) {
-                gradientStops[index].position = parseInt(this.value) || 0;
-                // 更新停止点元素的数据属性
-                stopElement.dataset.position = this.value;
-                updateGradientPreview();
-            }
-        });
-    });
-
-    // 颜色选择器
-    document.querySelectorAll('.stop-color').forEach(input => {
-        input.addEventListener('input', function () {
-            const stopElement = this.closest('.gradient-stop');
-            if (!stopElement) return;
-
-            // 直接从停止点元素获取数据属性
-            const position = parseInt(stopElement.dataset.position);
-            const color = stopElement.dataset.color;
-            const opacity = parseInt(stopElement.dataset.opacity);
-
-            // 在 gradientStops 数组中查找匹配的停止点
-            const index = gradientStops.findIndex(stop =>
-                stop.position === position &&
-                stop.color === color &&
-                stop.opacity === opacity
-            );
-
-            if (index !== -1) {
-                const colorValue = this.value;
-                gradientStops[index].color = colorValue;
-
-                // 更新停止点元素的数据属性
-                stopElement.dataset.color = colorValue;
-
-                // 更新颜色值输入框
-                const colorValueInput = stopElement.querySelector('.stop-color-value');
-                if (colorValueInput) {
-                    colorValueInput.value = colorValue;
-                }
-
-                // 更新渐变预览
-                updateGradientPreview();
-            }
-        });
-    });
-
-    // 透明度输入
-    document.querySelectorAll('.stop-opacity').forEach(input => {
-        input.addEventListener('input', function () {
-            const stopElement = this.closest('.gradient-stop');
-            if (!stopElement) return;
-
-            const position = parseInt(stopElement.dataset.position);
-            const color = stopElement.dataset.color;
-            const opacity = parseInt(stopElement.dataset.opacity);
-
-            const index = gradientStops.findIndex(stop =>
-                stop.position === position && stop.color === color && stop.opacity === opacity
-            );
-
-            if (index !== -1) {
-                gradientStops[index].opacity = parseInt(this.value) || 0;
-                // 更新停止点元素的数据属性
-                stopElement.dataset.opacity = this.value;
-                updateGradientPreview();
-            }
-        });
-    });
-
-    // 颜色值输入
-    document.querySelectorAll('.stop-color-value').forEach(input => {
-        input.addEventListener('input', function () {
-            const stopElement = this.closest('.gradient-stop');
-            if (!stopElement) return;
-
-            const position = parseInt(stopElement.dataset.position);
-            const color = stopElement.dataset.color;
-            const opacity = parseInt(stopElement.dataset.opacity);
-
-            const index = gradientStops.findIndex(stop =>
-                stop.position === position && stop.color === color && stop.opacity === opacity
-            );
-
-            if (index !== -1) {
-                let color = this.value;
-
-                // 确保有#号
-                if (!color.startsWith('#')) {
-                    color = '#' + color;
-                }
-
-                // 验证十六进制颜色
-                if (/^#[0-9A-F]{6}$/i.test(color)) {
-                    gradientStops[index].color = color.toUpperCase();
-
-                    // 更新停止点元素的数据属性
-                    stopElement.dataset.color = color.toUpperCase();
-
-                    // 更新颜色选择器
-                    const colorPicker = this.parentElement.querySelector('.stop-color-input');
-                    if (colorPicker) {
-                        colorPicker.value = color.toUpperCase();
-                    }
-
-                    updateGradientPreview();
-                }
-            }
-        });
-    });
-
-    // 删除按钮
-    document.querySelectorAll('.stop-remove').forEach(button => {
-        button.addEventListener('click', function () {
-            const stopElement = this.closest('.gradient-stop');
-            if (!stopElement) return;
-
-            // 直接从停止点元素获取数据属性
-            const position = parseInt(stopElement.dataset.position);
-            const color = stopElement.dataset.color;
-            const opacity = parseInt(stopElement.dataset.opacity);
-
-            // 在 gradientStops 数组中查找匹配的停止点
-            const index = gradientStops.findIndex(stop =>
-                stop.position === position &&
-                stop.color === color &&
-                stop.opacity === opacity
-            );
-
-            if (index !== -1 && gradientStops.length > 2) {
-                gradientStops.splice(index, 1);
-                renderGradientStops();
-            } else if (gradientStops.length <= 2) {
-                alert('至少需要两个颜色停止点');
-            }
-        });
-    });
-}
-
-function addShapeGradientStopListeners() {
-    document.querySelectorAll('#shapeGradientStopsContainer .stop-position').forEach((input, index) => {
-        input.addEventListener('input', function () {
-            currentShapeData.gradientStops[index].position = parseInt(this.value) || 0;
-            updateShapeGradientPreview();
-        });
-    });
-
-    document.querySelectorAll('#shapeGradientStopsContainer .stop-color').forEach((input, index) => {
-        input.addEventListener('input', function () {
-            currentShapeData.gradientStops[index].color = this.value;
-            updateShapeGradientPreview();
-        });
-    });
-
-    document.querySelectorAll('#shapeGradientStopsContainer .stop-opacity').forEach((input, index) => {
-        input.addEventListener('input', function () {
-            currentShapeData.gradientStops[index].opacity = parseInt(this.value) || 100;
-            updateShapeGradientPreview();
-        });
-    });
-
-    document.querySelectorAll('#shapeGradientStopsContainer .stop-remove').forEach((button, index) => {
-        button.addEventListener('click', function () {
-            if (currentShapeData.gradientStops.length > 2) {
-                currentShapeData.gradientStops.splice(index, 1);
-                renderShapeGradientStops();
-            } else {
-                alert('至少需要两个颜色停止点');
-            }
-        });
-    });
-}
-// 添加颜色停止点
-function addGradientStop() {
-    if (gradientStops.length >= 10) {
-        alert('最多只能添加10个颜色停止点');
-        return;
-    }
-
-    // 在中间位置添加新停止点
-    const sortedStops = [...gradientStops].sort((a, b) => a.position - b.position);
-    let newPosition = 50;
-
-    if (sortedStops.length > 1) {
-        // 在最大和最小位置之间找一个位置
-        const minPos = sortedStops[0].position;
-        const maxPos = sortedStops[sortedStops.length - 1].position;
-        newPosition = Math.round((minPos + maxPos) / 2);
-    }
-
-    // 生成随机颜色
-    const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-
-    // 添加新停止点
-    gradientStops.push({
-        position: newPosition,
-        color: randomColor,
-        opacity: 100
-    });
-
-    // 渲染更新后的停止点
-    renderGradientStops();
-}
-
-function addShapeGradientStop() {
-    if (currentShapeData.gradientStops.length >= 10) {
-        alert('最多只能添加10个颜色停止点');
-        return;
-    }
-
-    const sortedStops = [...currentShapeData.gradientStops].sort((a, b) => a.position - b.position);
-    let newPosition = 50;
-
-    if (sortedStops.length > 1) {
-        const minPos = sortedStops[0].position;
-        const maxPos = sortedStops[sortedStops.length - 1].position;
-        newPosition = Math.round((minPos + maxPos) / 2);
-    }
-
-    const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-
-    currentShapeData.gradientStops.push({
-        position: newPosition,
-        color: randomColor,
-        opacity: 100
-    });
-
-    renderShapeGradientStops();
-}
-// 应用渐变背景
-function applyGradientBackground() {
-    if (gradientStops.length === 0) {
-        alert('请至少添加一个颜色停止点');
-        return;
-    }
-
-    const sortedStops = [...gradientStops].sort((a, b) => a.position - b.position);
-    let gradientString = '';
-
-    switch (currentGradientType) {
-        case 'linear':
-            gradientString = `linear-gradient(to right, ${sortedStops.map(stop =>
-                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
-            ).join(', ')})`;
-            break;
-        case 'radial':
-            gradientString = `radial-gradient(circle, ${sortedStops.map(stop =>
-                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
-            ).join(', ')})`;
-            break;
-    }
-
-    // 清除其他背景设置
-    currentBackgroundImage = null;
-    widgetContainer.style.backgroundImage = 'none';
-
-    // 设置渐变背景
-    currentGradient = gradientString;
-    widgetContainer.style.background = gradientString;
-    widgetContainer.style.backgroundColor = 'transparent';
-
-    // 重置颜色选择器的值
-    const bgColorInput = document.getElementById('widgetBgColor');
-    const colorPreview = document.querySelector('.color-option.selected');
-    if (colorPreview) {
-        colorPreview.classList.remove('selected');
-    }
-    if (bgColorInput) {
-        bgColorInput.value = '#ffffff'; // 重置为白色
-    }
-
-    updateWidgetDataViews();
-}
-
-function applyShapeGradient() {
-    if (currentShapeData.gradientStops.length === 0) {
-        alert('请至少添加一个颜色停止点');
-        return;
-    }
-
-    const sortedStops = [...currentShapeData.gradientStops].sort((a, b) => a.position - b.position);
-    let gradientString = '';
-
-    switch (currentShapeData.gradientType) {
-        case 'linear':
-            gradientString = `linear-gradient(to right, ${sortedStops.map(stop =>
-                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
-            ).join(', ')})`;
-            break;
-        case 'radial':
-            gradientString = `radial-gradient(circle, ${sortedStops.map(stop =>
-                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
-            ).join(', ')})`;
-            break;
-    }
-
-    // 更新当前形状数据
-    currentShapeData.gradient = gradientString;
-    currentShapeData.color = ''; // 清除纯色
-
-    // 更新选中的形状元素
-    if (selectedElement && selectedElement.dataset.type === 'shape') {
-        const shapeData = shapeElements.find(s => s.id === currentShapeData.id);
-        if (shapeData) {
-            shapeData.gradient = gradientString;
-            shapeData.gradientType = currentShapeData.gradientType;
-            shapeData.gradientStops = [...currentShapeData.gradientStops];
-            shapeData.color = '';
-
-            // 应用渐变到元素
-            applyShapeGradientToElement(selectedElement, shapeData);
-        }
-    }
-
-    // 更新widgetData
-    updateWidgetDataViews();
-}
-
-function applyShapeGradientToElement(element, shapeData) {
-    // 如果形状没有渐变设置，使用默认值
-    if (!shapeData.gradientStops || shapeData.gradientStops.length === 0) {
-        shapeData.gradientStops = [
-            { position: 0, color: '#6A89CC', opacity: 100 },
-            { position: 100, color: '#2575FC', opacity: 100 }
-        ];
-    }
-    if (shapeData.gradient) {
-        // 创建SVG渐变
-        const svg = element.querySelector('svg');
-        if (svg) {
-            // 清除旧的渐变定义
-            const oldDefs = svg.querySelector('defs');
-            if (oldDefs) oldDefs.remove();
-
-            // 创建新的渐变定义
-            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            let gradient;
-
-            switch (shapeData.gradientType) {
-                case 'linear':
-                    gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-                    gradient.setAttribute('id', `gradient_${shapeData.id}`);
-                    gradient.setAttribute('x1', '0%');
-                    gradient.setAttribute('y1', '0%');
-                    gradient.setAttribute('x2', '100%');
-                    gradient.setAttribute('y2', '0%');
-                    break;
-                case 'radial':
-                    gradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
-                    gradient.setAttribute('id', `gradient_${shapeData.id}`);
-                    gradient.setAttribute('cx', '50%');
-                    gradient.setAttribute('cy', '50%');
-                    gradient.setAttribute('r', '50%');
-                    break;
-                default:
-                    gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-                    gradient.setAttribute('id', `gradient_${shapeData.id}`);
-                    gradient.setAttribute('x1', '0%');
-                    gradient.setAttribute('y1', '0%');
-                    gradient.setAttribute('x2', '100%');
-                    gradient.setAttribute('y2', '0%');
-            }
-
-            // 添加颜色停止点
-            const sortedStops = [...shapeData.gradientStops].sort((a, b) => a.position - b.position);
-            sortedStops.forEach(stop => {
-                const stopElement = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-                stopElement.setAttribute('offset', `${stop.position}%`);
-                stopElement.setAttribute('stop-color', stop.color);
-                stopElement.setAttribute('stop-opacity', stop.opacity / 100);
-                gradient.appendChild(stopElement);
-            });
-
-            defs.appendChild(gradient);
-            svg.insertBefore(defs, svg.firstChild);
-
-            // 应用渐变到形状
-            const shape = svg.querySelector('path, rect, ellipse');
-            if (shape) {
-                shape.setAttribute('fill', `url(#gradient_${shapeData.id})`);
-            }
-        }
-    } else {
-        // 恢复纯色
-        const svg = element.querySelector('svg');
-        if (svg) {
-            const shape = svg.querySelector('path, rect, ellipse');
-            if (shape) {
-                shape.setAttribute('fill', shapeData.color || '#6a89cc');
-            }
-        }
-    }
-}
-// 清除渐变背景
-function clearGradientBackground() {
-    currentGradient = null;
-    widgetContainer.style.background = document.getElementById('widgetBgColor').value;
-    widgetContainer.style.backgroundColor = document.getElementById('widgetBgColor').value;
-    widgetContainer.style.backgroundImage = 'none';
-    updateWidgetDataViews();
-}
-
-function clearShapeGradient() {
-    currentShapeData.gradient = null;
-    currentShapeData.gradientStops = [
-        { position: 0, color: '#BCEEFD', opacity: 100 },
-        { position: 100, color: '#FFDBDB', opacity: 100 }
-    ];
-
-    // 重置颜色选择器
-    document.getElementById('shapeColor').value = '#6a89cc';
-    currentShapeData.color = '#6a89cc';
-
-    // 更新选中的形状元素
-    if (selectedElement && selectedElement.dataset.type === 'shape') {
-        const shapeData = shapeElements.find(s => s.id === currentShapeData.id);
-        if (shapeData) {
-            shapeData.gradient = null;
-            shapeData.color = '#6a89cc';
-
-            // 恢复纯色到元素
-            const svg = selectedElement.querySelector('svg');
-            if (svg) {
-                const shape = svg.querySelector('path, rect, ellipse');
-                if (shape) {
-                    shape.setAttribute('fill', '#6a89cc');
-                }
-            }
-        }
-    }
-
-    // 重新初始化渐变编辑器
-    initShapeGradientEditor();
-
-    // 更新widgetData
-    updateWidgetDataViews();
-}
-// 初始化拖拽功能
-function initDragAndDrop() {
-    // Widget拖拽
-    makeWidgetDraggable();
-
-    // 为widget添加尺寸控制点
-    addResizeHandles(widgetContainer, 'widget');
-}
-
-// 更新辅助线
-function updateGuideLines() {
-    // 清空现有的辅助线
-    guideLines.innerHTML = '';
-
-    if (!guidesVisible) {
-        guideLines.style.display = 'none';
-        return;
-    }
-
-    guideLines.style.display = 'block';
-
-    // 获取网格尺寸
-    const gridSize = getGridSize();
-
-    // 根据不同的模板创建不同的网格
-    if (widgetData.span_x === 4 && widgetData.span_y === 2) {
-        // 4x2模板：60x30个格子
-        createGridLines(gridSize.x, gridSize.y, 60, 30);
-    } else {
-        // 2x2模板：30x30个格子
-        createGridLines(gridSize.x, gridSize.y, 30, 30);
-    }
-}
-
-// 创建网格线
-function createGridLines(spanX, spanY, gridCols, gridRows) {
-    // 创建垂直网格线
-    for (let i = 0; i <= gridCols; i++) {
-        const line = document.createElement('div');
-        line.className = 'guide-line vertical';
-        line.style.left = `${(i / gridCols) * 100}%`;
-        line.style.backgroundColor = currentGuideColor;
-        guideLines.appendChild(line);
-    }
-
-    // 创建水平网格线
-    for (let i = 0; i <= gridRows; i++) {
-        const line = document.createElement('div');
-        line.className = 'guide-line horizontal';
-        line.style.top = `${(i / gridRows) * 100}%`;
-        line.style.backgroundColor = currentGuideColor;
-        guideLines.appendChild(line);
-    }
-}
-
-// 获取当前网格尺寸（格子数）
-function getGridSize() {
-    if (widgetData.span_x === 4 && widgetData.span_y === 2) {
-        return { x: 60, y: 30 };
-    } else {
-        return { x: 30, y: 30 };
-    }
-}
-
-/**
- * 将网格数量转换为Web端显示的px字号
- * @param {number} gridSize - 网格数量 (如3表示占用3个格子高度)
- * @returns {number} - 像素大小
- */
-function calculateFontSizeFromGrid(gridSize) {
-    const gridInfo = getGridSize();
-    const logicalHeight = gridInfo.y;  // 2x2和4x2的逻辑高度都是30
-
-    // 获取widget容器的实际像素高度
-    const canvasHeightPx = widgetContainer.offsetHeight || 300;
-
-    // 计算缩放比例
-    const scaleFactor = canvasHeightPx / logicalHeight;
-
-    // 返回实际字号 (gridSize × scaleFactor)
-    return gridSize * scaleFactor;
-}
-
-// 格子数转换为像素数（向上取整）
-function gridToPx(gridWidth, gridHeight) {
-    const widgetWidth = widgetContainer.offsetWidth;
-    const widgetHeight = widgetContainer.offsetHeight;
-    const gridSize = getGridSize();
-
-    // 向上取整
-    const gridWidthInt = Math.ceil(gridWidth);
-    const gridHeightInt = Math.ceil(gridHeight);
-
-    const pxWidth = (gridWidthInt / gridSize.x) * widgetWidth;
-    const pxHeight = (gridHeightInt / gridSize.y) * widgetHeight;
-
-    return { pxWidth, pxHeight, gridWidth: gridWidthInt, gridHeight: gridHeightInt };
-}
-
-// 像素数转换为格子数（向上取整）
-function pxToGrid(pxWidth, pxHeight) {
-    const widgetWidth = widgetContainer.offsetWidth;
-    const widgetHeight = widgetContainer.offsetHeight;
-    const gridSize = getGridSize();
-
-    // 向上取整
-    const gridWidth = Math.ceil((pxWidth / widgetWidth) * gridSize.x);
-    const gridHeight = Math.ceil((pxHeight / widgetHeight) * gridSize.y);
-
-    return { gridWidth, gridHeight };
 }
 
 // 清除所有列表项的选中状态
@@ -2660,8 +1396,6 @@ function addTextElement() {
         vAlign: "center",
         x: 15,
         y: 15,
-        rotation: 0,
-        opacity: 100,
         zIndex: 10,
         element: null,
         type: 'text'
@@ -3958,10 +2692,1938 @@ function createTemperatureElement(temperatureData) {
     return element;
 }
 
+// 应用元素位置（使用格子数）
+function applyElementPosition(element, x, y) {
+    // 将格子数转换为百分比
+    const gridSize = getGridSize();
+    const percentX = (x / gridSize.x) * 100;
+    const percentY = (y / gridSize.y) * 100;
+
+    element.style.left = `${percentX}%`;
+    element.style.top = `${percentY}%`;
+    element.dataset.x = x;
+    element.dataset.y = y;
+}
+
+// 添加尺寸控制点到元素
+function addResizeHandles(element, type) {
+    // 移除已有的控制点
+    removeResizeHandles(element);
+
+    // 八个控制点位置
+    const handles = ['top-left', 'top-center', 'top-right', 'middle-right', 'bottom-right', 'bottom-center', 'bottom-left', 'middle-left'];
+
+    handles.forEach(handle => {
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = `resize-handle ${handle}`;
+        element.appendChild(resizeHandle);
+
+        // 添加拖拽事件
+        makeResizeHandleDraggable(resizeHandle, element, handle, type);
+    });
+}
+
+// 移除尺寸控制点
+function removeResizeHandles(element) {
+    const handles = element.querySelectorAll('.resize-handle');
+    handles.forEach(handle => {
+        handle.remove();
+    });
+}
+
+// 使控制点可拖拽以调整尺寸
+function makeResizeHandleDraggable(handle, element, handleType, elementType) {
+    let isResizing = false;
+    let startX, startY;
+    let startWidth, startHeight;
+    let startLeft, startTop;
+
+    handle.addEventListener('mousedown', startResize);
+    handle.addEventListener('touchstart', startResizeTouch);
+
+    function startResize(e) {
+        e.stopPropagation();
+        isResizing = true;
+
+        // 记录初始状态
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = element.offsetWidth;
+        startHeight = element.offsetHeight;
+
+        // 获取元素当前位置
+        const computedStyle = window.getComputedStyle(element);
+        startLeft = parseFloat(computedStyle.left);
+        startTop = parseFloat(computedStyle.top);
+
+        // 添加事件监听器
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+
+        e.preventDefault();
+    }
+
+    function startResizeTouch(e) {
+        if (e.touches.length !== 1) return;
+
+        e.stopPropagation();
+        isResizing = true;
+
+        const touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        startWidth = element.offsetWidth;
+        startHeight = element.offsetHeight;
+
+        const computedStyle = window.getComputedStyle(element);
+        startLeft = parseFloat(computedStyle.left);
+        startTop = parseFloat(computedStyle.top);
+
+        document.addEventListener('touchmove', resizeTouch);
+        document.addEventListener('touchend', stopResizeTouch);
+
+        e.preventDefault();
+    }
+
+    function resize(e) {
+        if (!isResizing) return;
+
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+
+        applyResize(deltaX, deltaY);
+
+        e.preventDefault();
+    }
+
+    function resizeTouch(e) {
+        if (!isResizing || e.touches.length !== 1) return;
+
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+
+        applyResize(deltaX, deltaY);
+
+        e.preventDefault();
+    }
+
+    function applyResize(deltaX, deltaY) {
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = startLeft;
+        let newTop = startTop;
+
+        // 根据控制点类型调整尺寸和位置
+        switch (handleType) {
+            case 'top-left':
+                newWidth = Math.max(10, startWidth - deltaX);
+                newHeight = Math.max(10, startHeight - deltaY);
+                newLeft = startLeft + deltaX;
+                newTop = startTop + deltaY;
+                break;
+            case 'top-center':
+                newHeight = Math.max(10, startHeight - deltaY);
+                newTop = startTop + deltaY;
+                break;
+            case 'top-right':
+                newWidth = Math.max(10, startWidth + deltaX);
+                newHeight = Math.max(10, startHeight - deltaY);
+                newTop = startTop + deltaY;
+                break;
+            case 'middle-right':
+                newWidth = Math.max(10, startWidth + deltaX);
+                break;
+            case 'bottom-right':
+                newWidth = Math.max(10, startWidth + deltaX);
+                newHeight = Math.max(10, startHeight + deltaY);
+                break;
+            case 'bottom-center':
+                newHeight = Math.max(10, startHeight + deltaY);
+                break;
+            case 'bottom-left':
+                newWidth = Math.max(10, startWidth - deltaX);
+                newHeight = Math.max(10, startHeight + deltaY);
+                newLeft = startLeft + deltaX;
+                break;
+            case 'middle-left':
+                newWidth = Math.max(10, startWidth - deltaX);
+                newLeft = startLeft + deltaX;
+                break;
+        }
+
+        // 转换为格子数（向上取整）
+        const newGridSize = pxToGrid(newWidth, newHeight);
+
+        // 限制最小格子数为1
+        const gridWidth = Math.max(1, newGridSize.gridWidth);
+        const gridHeight = Math.max(1, newGridSize.gridHeight);
+
+        // 根据格子数重新计算像素尺寸
+        const pixelSize = gridToPx(gridWidth, gridHeight);
+
+        // 应用新尺寸
+        element.style.width = pixelSize.pxWidth + 'px';
+        element.style.height = pixelSize.pxHeight + 'px';
+
+        // 保存格子数
+        element.dataset.gridWidth = pixelSize.gridWidth;
+        element.dataset.gridHeight = pixelSize.gridHeight;
+
+        // 应用新位置
+        if (newLeft !== startLeft) element.style.left = newLeft + 'px';
+        if (newTop !== startTop) element.style.top = newTop + 'px';
+
+        // 更新属性面板
+        if (selectedElement === element) {
+            if (elementType === 'material') {
+                updateMaterialPropertiesPanel(element);
+            } else if (elementType === 'text') {
+                // 对于文字元素，只更新尺寸，不调整字体大小
+                const textData = textElements.find(t => t.id === element.id);
+                if (textData) {
+                    textData.width = pixelSize.gridWidth;
+                    textData.height = pixelSize.gridHeight;
+                    updateTextPropertiesPanel(element);
+                }
+            } else if (elementType === 'shape') {
+                const shapeData = shapeElements.find(s => s.id === element.id);
+                if (shapeData) {
+                    shapeData.width = pixelSize.gridWidth;
+                    shapeData.height = pixelSize.gridHeight;
+                    updateShapePropertiesPanel(element);
+                }
+            } else if (elementType === 'module') {
+                const moduleData = moduleElements.find(m => m.id === element.id);
+                if (moduleData) {
+                    moduleData.width = pixelSize.gridWidth;
+                    moduleData.height = pixelSize.gridHeight;
+                    updateModulePropertiesPanel(element);
+                }
+            } else if (elementType === 'widget') {
+                // 更新widget尺寸数据
+                if (newWidth === 624 && newHeight === 300) {
+                    widgetData.span_x = 4;
+                    widgetData.span_y = 2;
+                    document.getElementById('widgetSize').value = '4x2';
+                    document.querySelector('.template-4x2').classList.add('selected');
+                    document.querySelector('.template-2x2').classList.remove('selected');
+                } else if (newWidth === 300 && newHeight === 300) {
+                    widgetData.span_x = 2;
+                    widgetData.span_y = 2;
+                    document.getElementById('widgetSize').value = '2x2';
+                    document.querySelector('.template-4x2').classList.remove('selected');
+                    document.querySelector('.template-2x2').classList.add('selected');
+                }
+
+                // 更新辅助线
+                updateGuideLines();
+            }
+        }
+    }
+
+    function stopResize() {
+        isResizing = false;
+        document.removeEventListener('mousemove', resize);
+        document.removeEventListener('mouseup', stopResize);
+        // 更新widgetData
+        updateWidgetDataViews();
+    }
+
+    function stopResizeTouch() {
+        isResizing = false;
+        document.removeEventListener('touchmove', resizeTouch);
+        document.removeEventListener('touchend', stopResizeTouch);
+        updateWidgetDataViews();
+    }
+}
+
+// 更新widgetData
+function updateWidgetDataViews() {
+    widgetData.layer = [];// 清空所有layer
+    const gridSize = getGridSize(); // 获取模版尺寸
+
+    widgetData.layer.push({
+        type: "custom_widget",
+        position: {
+            x: 0,
+            y: 0,
+            width: gridSize.x,
+            height: gridSize.y
+        },
+        views: []
+    });
+
+    // 创建自定义文本时钟layer（用于clock、calendar、week模块）
+    let customTextClockLayer = null;
+
+    // 添加背景
+    if (currentBackgroundImage) {
+        // 如果有背景图片
+        if (widgetData.span_x === 4 && widgetData.span_y === 2) {
+            // 4x2模板的配置
+            widgetData.layer[0].views.push({
+                view_type: "ShapeImageView",
+                bg: "background.png",
+                position: {
+                    x: 0,
+                    y: 0,
+                    width: gridSize.x,
+                    height: gridSize.y
+                }
+            });
+        } else {
+            // 2x2模板的配置
+            widgetData.layer[0].views.push({
+                view_type: "ShapeImageView",
+                bg: "background",
+                role_color: "surface",
+                position: {
+                    x: 0,
+                    y: 0,
+                    width: gridSize.x,
+                    height: gridSize.y
+                }
+            });
+        }
+    } else {
+        // 如果没有背景图片，使用颜色背景
+        let bgColor = "#FFFFFF";
+
+        // 获取当前widget的背景颜色
+        const computedStyle = window.getComputedStyle(widgetContainer);
+        const widgetBgColor = computedStyle.backgroundColor ||
+            computedStyle.background ||
+            document.getElementById('widgetBgColor').value;
+
+        // 如果是渐变背景，取第一个颜色或使用默认白色
+        if (currentGradient) {
+            // 如果是渐变背景，使用默认白色或取第一个颜色
+            if (gradientStops.length > 0) {
+                bgColor = gradientStops[0].color;
+            }
+        } else if (widgetBgColor && widgetBgColor !== 'transparent' && widgetBgColor !== 'rgba(0, 0, 0, 0)') {
+            // 如果不是透明色，则使用widget的背景颜色
+            bgColor = widgetBgColor;
+
+            // 如果是rgb/rgba格式，转换为hex
+            if (bgColor.startsWith('rgb')) {
+                // 从rgb或rgba中提取数值
+                const rgb = bgColor.match(/\d+/g);
+                if (rgb && rgb.length >= 3) {
+                    const r = parseInt(rgb[0]);
+                    const g = parseInt(rgb[1]);
+                    const b = parseInt(rgb[2]);
+                    bgColor = rgbToHex(r, g, b);
+                }
+            }
+        }
+
+        // 添加颜色背景视图
+        widgetData.layer[0].views.push({
+            view_type: "ImageView",
+            bg: bgColor, // 使用颜色值
+            position: {
+                x: 0,
+                y: 0,
+                width: gridSize.x,
+                height: gridSize.y
+            }
+        });
+    }
+
+    // 添加所有素材视图
+    uploadedMaterials.forEach(material => {
+        if (material.element) {
+            const element = material.element;
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
+            const width = parseInt(element.dataset.gridWidth) || 5;
+            const height = parseInt(element.dataset.gridHeight) || 5;
+
+            widgetData.layer[0].views.push({
+                view_type: "ImageView",
+                bg: material.name,
+                position: {
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
+                }
+            });
+        }
+    });
+
+    let index = 1;
+    // 添加所有形状视图
+    shapeElements.forEach(shape => {
+        if (shape.element) {
+            const element = shape.element;
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
+            const width = parseInt(element.dataset.gridWidth) || 5;
+            const height = parseInt(element.dataset.gridHeight) || 5;
+            // 生成SVG文件名
+            const svgFileName = `shape_${index}.svg`;
+
+            const shapeView = {
+                view_type: "ShapeSvgView",
+                bg: svgFileName,
+                position: {
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
+                }
+            };
+
+            widgetData.layer[0].views.push(shapeView);
+            index++;
+        }
+    });
+
+    // 添加所有模块视图
+    moduleElements.forEach(module => {
+        if (module.element) {
+            const element = module.element;
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
+            const width = parseInt(element.dataset.gridWidth) || 9;
+            const height = parseInt(element.dataset.gridHeight) || 5;
+
+            // 检查是否为需要合并到custom_text_clock_1 layer的模块
+            if (module.type === 'clock' || module.type === 'calendar' || module.type === 'week') {
+                // 如果还没有创建custom_text_clock_1 layer，则创建
+                if (!customTextClockLayer) {
+                    customTextClockLayer = {
+                        type: "custom_text_clock_1",
+                        position: {
+                            x: 0,
+                            y: 0,
+                            width: gridSize.x,
+                            height: gridSize.y
+                        },
+                        views: []
+                    };
+                }
+
+                // 根据模块类型创建不同的视图
+                if (module.type === 'clock') {
+                    customTextClockLayer.views.push({
+                        view_type: "TextClock",
+                        text: "HH:mm",
+                        text_size: module.textSize || 3,
+                        text_color: module.textColor || "#000000",
+                        role_color: "on_surface",
+                        position: {
+                            x: x,
+                            y: y,
+                            width: width,
+                            height: height
+                        }
+                    });
+                } else if (module.type === 'calendar') {
+                    customTextClockLayer.views.push({
+                        view_type: "TextClock",
+                        text: module.dateFormat || "MMM dd",
+                        text_color: module.textColor || "#000000",
+                        text_size: module.textSize || 3,
+                        role_color: module.role_color || "on_surface",
+                        position: {
+                            x: x,
+                            y: y,
+                            width: width,
+                            height: height
+                        }
+                    });
+                } else if (module.type === 'week') {
+                    customTextClockLayer.views.push({
+                        view_type: "TextView",
+                        text: module.weekFormat || "MMMM dd'th', 'week'",
+                        text_color: module.textColor || "#000000",
+                        text_size: module.textSize || 3,
+                        role_color: module.role_color || "on_surface",
+                        position: {
+                            x: x,
+                            y: y,
+                            width: width,
+                            height: height
+                        }
+                    });
+                }
+            } else if (module.type === 'battery') {
+                widgetData.layer.push({
+                    type: "battery_widget_1",
+                    position: {
+                        x: 0,
+                        y: 0,
+                        width: gridSize.x,
+                        height: gridSize.y
+                    },
+                    views: [{
+                        view_type: "TextView",
+                        text: "battery_level",
+                        text_color: module.textColor || "#000000",
+                        text_size: module.textSize || 3,
+                        position: {
+                            x: x,
+                            y: y,
+                            width: width,
+                            height: height
+                        }
+                    }]
+                });
+            } else if (module.type === 'countdown') {
+                widgetData.layer.push({
+                    type: "countdown_widget_1",
+                    position: {
+                        x: 0,
+                        y: 0,
+                        width: gridSize.x,
+                        height: gridSize.y
+                    },
+                    views: [{
+                        view_type: "TextView",
+                        text: "countdown_new_year",
+                        text_color: module.textColor || "#000000",
+                        text_size: module.textSize || 3,
+                        position: {
+                            x: x,
+                            y: y,
+                            width: width,
+                            height: height
+                        }
+                    }]
+                });
+            } else if (module.type === 'memory') {
+                widgetData.layer[0].views.push({
+                    view_type: "TextView",
+                    text: "ram_size",
+                    text_color: module.textColor || "#000000",
+                    text_size: module.textSize || 3,
+                    position: {
+                        x: x,
+                        y: y,
+                        width: width,
+                        height: height
+                    }
+                });
+            } else if (module.type === 'today-length') {
+                widgetData.layer[0].views.push({
+                    view_type: "TextView",
+                    text: "today_length",
+                    text_color: module.textColor || "#000000",
+                    text_size: module.textSize || 3,
+                    position: {
+                        x: x,
+                        y: y,
+                        width: width,
+                        height: height
+                    }
+                });
+            }
+        }
+    });
+
+    // 如果存在custom_text_clock_1 layer，则添加到widgetData.layer中
+    if (customTextClockLayer) {
+        widgetData.layer.push(customTextClockLayer);
+    }
+
+    // 添加所有指针时钟视图
+    analogClockElements.forEach(clock => {
+        if (clock.element) {
+            const element = clock.element;
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
+            const width = parseInt(element.dataset.gridWidth) || 25;
+            const height = parseInt(element.dataset.gridHeight) || 25;
+
+            widgetData.layer.push({
+                type: "analog_clock_1",
+                position: {
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
+                },
+                views: [{
+                    view_id: "dial_1",
+                    bg: "clock_1_dial.png",
+                }, {
+                    view_id: "hour_1",
+                    bg: "clock_1_hour.png",
+                }, {
+                    view_id: "minute_1",
+                    bg: "clock_1_minute.png",
+                }, {
+                    view_id: "second_1",
+                    bg: "clock_1_second.png",
+                }]
+            });
+        }
+    });
+
+    // 将天气图标和温度文本组合成独立的天气模块层
+    weatherIconElements.forEach((weatherIcon, index) => {
+        if (weatherIcon.element) {
+            const element = weatherIcon.element;
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
+            const width = parseInt(element.dataset.gridWidth) || 5;
+            const height = parseInt(element.dataset.gridHeight) || 5;
+
+            // 查找对应的温度文本（如果有）
+            const temperature = temperatureElements[index];
+
+            // 创建天气模块层
+            const weatherLayer = {
+                type: "weather_widget_1",
+                position: {
+                    x: 0,
+                    y: 0,
+                    width: gridSize.x,
+                    height: gridSize.y
+                },
+                views: []
+            };
+
+            // 添加天气图标视图
+            weatherLayer.views.push({
+                view_id: "digital_clock_weather",
+                view_type: "ImageView",
+                position: {
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
+                }
+            });
+
+            // 如果有对应的温度文本，添加到同一个层
+            if (temperature && temperature.element) {
+                const tempElement = temperature.element;
+                const tempX = parseInt(tempElement.dataset.x) || 0;
+                const tempY = parseInt(tempElement.dataset.y) || 0;
+                const tempWidth = parseInt(tempElement.dataset.gridWidth) || 8;
+                const tempHeight = parseInt(tempElement.dataset.gridHeight) || 4;
+
+                weatherLayer.views.push({
+                    view_id: "digital_clock_temperature",
+                    view_type: "TextView",
+                    text: "N/A",
+                    text_color: temperature.textColor || "#000000",
+                    text_size: temperature.textSize || 3,
+                    role_color: "on_surface",
+                    position: {
+                        x: tempX,
+                        y: tempY,
+                        width: tempWidth,
+                        height: tempHeight
+                    }
+                });
+            }
+
+            // 将天气模块层添加到widgetData中
+            widgetData.layer.push(weatherLayer);
+        }
+    });
+
+    // 单独处理没有对应天气图标的温度文本
+    temperatureElements.forEach((temperature, index) => {
+        // 跳过已经有对应天气图标的温度文本
+        if (index < weatherIconElements.length) return;
+
+        if (temperature && temperature.element) {
+            const tempElement = temperature.element;
+            const tempX = parseInt(tempElement.dataset.x) || 0;
+            const tempY = parseInt(tempElement.dataset.y) || 0;
+            const tempWidth = parseInt(tempElement.dataset.gridWidth) || 8;
+            const tempHeight = parseInt(tempElement.dataset.gridHeight) || 4;
+
+            // 创建独立的温度模块层
+            const temperatureLayer = {
+                type: "weather_widget_1",
+                position: {
+                    x: 0,
+                    y: 0,
+                    width: gridSize.x,
+                    height: gridSize.y
+                },
+                views: [
+                    {
+                        view_id: "digital_clock_temperature",
+                        view_type: "TextView",
+                        text: "N/A",
+                        text_color: temperature.textColor || "#000000",
+                        text_size: temperature.textSize || 3,
+                        role_color: "on_surface",
+                        position: {
+                            x: tempX,
+                            y: tempY,
+                            width: tempWidth,
+                            height: tempHeight
+                        }
+                    }
+                ]
+            };
+
+            // 将温度模块层添加到widgetData中
+            widgetData.layer.push(temperatureLayer);
+        }
+    });
+
+    // 添加所有文字视图
+    textElements.forEach(text => {
+        if (text.element) {
+            const element = text.element;
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
+            const width = parseInt(element.dataset.gridWidth) || 8;
+            const height = parseInt(element.dataset.gridHeight) || 4;
+
+            widgetData.layer[0].views.push({
+                view_type: "TextView",
+                text: text.content || "示例文字",
+                text_color: text.color || "#000000",
+                text_size: text.size || 3,
+                position: {
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
+                }
+            });
+        }
+    });
+}
+
+// 初始化右键菜单
+function initContextMenu() {
+    const contextMenu = document.getElementById('contextMenu');
+    // 为所有可编辑元素添加右键菜单
+    document.addEventListener('contextmenu', function (e) {
+        // 检查点击的是否是可编辑元素
+        const target = e.target;
+        const isElement = target.closest('.draggable-element, .text-element, .shape-element, .module-element, #widgetContainer, .analog-clock-element, .weather-icon-element, .temperature-element');
+
+        if (isElement) {
+            e.preventDefault();
+
+            // 如果是widget容器，但点击的不是widget内容，不显示菜单
+            if (target.id === 'widgetContainer' && !target.classList.contains('selected')) {
+                return;
+            }
+
+            // 显示右键菜单
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = e.pageX + 'px';
+            contextMenu.style.top = e.pageY + 'px';
+
+            // 如果当前没有选中任何元素，选中点击的元素
+            if (isElement !== selectedElement) {
+                if (isElement.classList.contains('draggable-element')) {
+                    selectMaterialElement(isElement.id);
+                } else if (isElement.classList.contains('text-element')) {
+                    if (isElement.classList.contains('module-element')) {
+                        selectModuleElement(isElement.id);
+                    } else {
+                        selectTextElement(isElement.id);
+                    }
+                } else if (isElement.classList.contains('shape-element')) {
+                    selectShapeElement(isElement.id);
+                } else if (isElement.classList.contains('weather-icon-element')) {
+                    selectWeatherIconElement(isElement.id);
+                } else if (isElement.classList.contains('temperature-element')) {
+                    selectTemperatureElement(isElement.id);
+                } else if (isElement.id === 'widgetContainer') {
+                    selectWidget();
+                } else if (isElement.classList.contains('analog-clock-element')) {
+                    selectAnalogClockElement(isElement.id);
+                }
+            }
+
+            // 更新粘贴按钮状态
+            const pasteBtn = document.getElementById('pasteElement');
+            pasteBtn.style.opacity = copiedElementData ? '1' : '0.5';
+            pasteBtn.style.pointerEvents = copiedElementData ? 'auto' : 'none';
+        }
+    });
+
+    // 点击其他地方隐藏右键菜单
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.context-menu')) {
+            contextMenu.style.display = 'none';
+        }
+    });
+
+    // 复制菜单项
+    document.getElementById('copyElement').addEventListener('click', function () {
+        copySelectedElement();
+        contextMenu.style.display = 'none';
+    });
+
+    // 粘贴菜单项
+    document.getElementById('pasteElement').addEventListener('click', function () {
+        pasteElement();
+        contextMenu.style.display = 'none';
+    });
+
+    // 删除菜单项
+    document.getElementById('deleteElement').addEventListener('click', function () {
+        deleteSelectedElement();
+        contextMenu.style.display = 'none';
+    });
+
+    // 添加快捷键支持
+    document.addEventListener('keydown', function (e) {
+        // Ctrl+C 复制
+        if (e.ctrlKey && e.key === 'c') {
+            e.preventDefault();
+            copySelectedElement();
+        }
+
+        // Ctrl+V 粘贴
+        if (e.ctrlKey && e.key === 'v') {
+            e.preventDefault();
+            pasteElement();
+        }
+
+        // Delete 键删除
+        if (e.key === 'Delete') {
+            e.preventDefault();
+            deleteSelectedElement();
+        }
+    });
+}
+
+// 复制选中的元素
+function copySelectedElement() {
+    if (!selectedElement) {
+        console.warn('没有选中任何元素');
+        return;
+    }
+    const elementType = selectedElement.dataset.type;
+    switch (elementType) {
+        case 'material':
+            copyMaterialElement();
+            break;
+        case 'text':
+            copyTextElement();
+            break;
+        case 'shape':
+            copyShapeElement();
+            break;
+        case 'module':
+            copyModuleElement();
+            break;
+        case 'analog-clock':
+            copyAnalogClockElement();
+            break;
+        case 'weather-icon':
+            copyWeatherIconElement();
+            break;
+        case 'temperature':
+            copyTemperatureElement();
+            break;
+        default:
+            console.warn('不支持复制该类型元素:', elementType);
+    }
+}
+
+// 复制素材元素
+function copyMaterialElement() {
+    const material = uploadedMaterials.find(m => m.id === selectedElement.id);
+    if (!material) return;
+
+    copiedElementType = 'material';
+    copiedElementData = {
+        name: material.name + ' - 副本',
+        dataUrl: material.dataUrl,
+        // 从元素的dataset获取最新的网格尺寸
+        gridWidth: parseInt(selectedElement.dataset.gridWidth) || material.gridWidth,
+        gridHeight: parseInt(selectedElement.dataset.gridHeight) || material.gridHeight,
+        x: parseInt(selectedElement.dataset.x) || 0,
+        y: parseInt(selectedElement.dataset.y) || 0,
+        rotation: parseInt(selectedElement.style.transform?.match(/rotate\(([^)]+)deg\)/)?.[1] || 0),
+        opacity: parseFloat(selectedElement.style.opacity || 1) * 100,
+        enabled: selectedElement.style.display !== 'none',
+        zIndex: parseInt(selectedElement.style.zIndex || 10)
+    };
+}
+
+// 复制文字元素
+function copyTextElement() {
+    const textData = textElements.find(t => t.id === selectedElement.id);
+    if (!textData) return;
+
+    copiedElementType = 'text';
+    copiedElementData = {
+        name: textData.name + ' - 副本',
+        content: textData.content,
+        width: textData.width,
+        height: textData.height,
+        size: textData.size,
+        color: textData.color,
+        x: textData.x,
+        y: textData.y,
+        enabled: textData.enabled,
+        zIndex: textData.zIndex
+    };
+}
+
+// 复制形状元素
+function copyShapeElement() {
+    const shapeData = shapeElements.find(s => s.id === selectedElement.id);
+    if (!shapeData) return;
+
+    copiedElementType = 'shape';
+    copiedElementData = {
+        name: shapeData.name + ' - 副本',
+        type: shapeData.type,
+        width: shapeData.width,
+        height: shapeData.height,
+        color: shapeData.color,
+        x: shapeData.x,
+        y: shapeData.y,
+        rotation: shapeData.rotation,
+        opacity: shapeData.opacity,
+        enabled: shapeData.enabled,
+        zIndex: shapeData.zIndex,
+        gradient: shapeData.gradient,
+        gradientType: shapeData.gradientType,
+        gradientStops: shapeData.gradientStops ? [...shapeData.gradientStops] : null
+    };
+}
+
+// 复制模块元素
+function copyModuleElement() {
+    const moduleData = moduleElements.find(m => m.id === selectedElement.id);
+    if (!moduleData) return;
+
+    copiedElementType = 'module';
+    copiedElementData = {
+        name: moduleData.name + ' - 副本',
+        type: moduleData.type,
+        content: moduleData.content,
+        width: moduleData.width,
+        height: moduleData.height,
+        x: moduleData.x,
+        y: moduleData.y,
+        textSize: moduleData.textSize,
+        textColor: moduleData.textColor,
+        dateFormat: moduleData.dateFormat,
+        enabled: moduleData.enabled,
+        zIndex: moduleData.zIndex
+    };
+}
+
+// 复制指针时钟元素
+function copyAnalogClockElement() {
+    const clockData = analogClockElements.find(c => c.id === selectedElement.id);
+    if (!clockData) return;
+
+    copiedElementType = 'analog-clock';
+    copiedElementData = {
+        name: clockData.name + ' - 副本',
+        width: clockData.width,
+        height: clockData.height,
+        x: clockData.x,
+        y: clockData.y,
+        enabled: clockData.enabled,
+        zIndex: clockData.zIndex,
+        dialImage: clockData.dialImage,
+        hourImage: clockData.hourImage,
+        minuteImage: clockData.minuteImage,
+        secondImage: clockData.secondImage,
+        dialDataUrl: clockData.dialDataUrl,
+        hourDataUrl: clockData.hourDataUrl,
+        minuteDataUrl: clockData.minuteDataUrl,
+        secondDataUrl: clockData.secondDataUrl
+    };
+}
+
+// 粘贴元素
+function pasteElement() {
+    if (!copiedElementData || !copiedElementType) {
+        console.warn('没有可粘贴的元素');
+        return;
+    }
+
+    // 计算偏移后的位置
+    const gridSize = getGridSize();
+
+    // 直接使用格子偏移（1-2个格子）
+    const gridOffsetX = 2;
+    const gridOffsetY = 2;
+
+    // 创建偏移后的位置
+    const offsetX = copiedElementData.x + gridOffsetX;
+    const offsetY = copiedElementData.y + gridOffsetY;
+
+    // 确保位置在widget范围内
+    const maxX = gridSize.x - (copiedElementData.gridWidth || copiedElementData.width || 5);
+    const maxY = gridSize.y - (copiedElementData.gridHeight || copiedElementData.height || 5);
+    const safeX = Math.max(0, Math.min(offsetX, maxX));
+    const safeY = Math.max(0, Math.min(offsetY, maxY));
+
+    switch (copiedElementType) {
+        case 'material':
+            pasteMaterialElement(safeX, safeY);
+            break;
+        case 'text':
+            pasteTextElement(safeX, safeY);
+            break;
+        case 'shape':
+            pasteShapeElement(safeX, safeY);
+            break;
+        case 'module':
+            pasteModuleElement(safeX, safeY);
+            break;
+        case 'analog-clock':
+            pasteAnalogClockElement(safeX, safeY);
+            break;
+    }
+}
+
+// 粘贴素材元素
+function pasteMaterialElement(x, y) {
+    // 创建一个新的File对象（模拟）
+    const byteString = atob(copiedElementData.dataUrl.split(',')[1]);
+    const mimeString = copiedElementData.dataUrl.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    const blob = new Blob([ab], { type: mimeString });
+    const file = new File([blob], copiedElementData.name, { type: mimeString });
+
+    // 处理上传
+    handleMaterialUpload(file).then(materialData => {
+        // 设置位置和属性
+        materialData.name = copiedElementData.name;
+        materialData.gridWidth = copiedElementData.gridWidth;
+        materialData.gridHeight = copiedElementData.gridHeight;
+        materialData.enabled = copiedElementData.enabled;
+
+        // 更新元素
+        if (materialData.element) {
+            applyElementPosition(materialData.element, x, y);
+            applyElementSize(materialData.element, copiedElementData.gridWidth, copiedElementData.gridHeight, 'material');
+            materialData.element.style.transform = `rotate(${copiedElementData.rotation}deg)`;
+            materialData.element.style.opacity = copiedElementData.opacity / 100;
+            materialData.element.style.zIndex = copiedElementData.zIndex;
+            materialData.element.style.display = copiedElementData.enabled ? 'flex' : 'none';
+
+            // 选中新创建的元素
+            selectMaterialElement(materialData.id);
+        }
+
+        // 更新数据
+        materialData.x = x;
+        materialData.y = y;
+        materialData.rotation = copiedElementData.rotation;
+        materialData.opacity = copiedElementData.opacity;
+        materialData.zIndex = copiedElementData.zIndex;
+
+        updateWidgetDataViews();
+    });
+}
+
+// 粘贴文字元素
+function pasteTextElement(x, y) {
+    const textData = addTextElement();
+
+    // 设置属性
+    textData.name = copiedElementData.name;
+    textData.content = copiedElementData.content;
+    textData.width = copiedElementData.width;
+    textData.height = copiedElementData.height;
+    textData.size = copiedElementData.size;
+    textData.color = copiedElementData.color;
+    textData.x = x;
+    textData.y = y;
+    textData.enabled = copiedElementData.enabled;
+    textData.zIndex = copiedElementData.zIndex;
+
+    // 更新元素
+    if (textData.element) {
+        applyElementPosition(textData.element, x, y);
+        applyElementSize(textData.element, copiedElementData.width, copiedElementData.height, 'text');
+        applyTextStyle(textData.element, textData);
+
+        // 选中新创建的元素
+        selectTextElement(textData.id);
+    }
+
+    updateWidgetDataViews();
+}
+
+// 粘贴形状元素
+function pasteShapeElement(x, y) {
+    const shapeData = addShapeElement(copiedElementData.type);
+
+    // 设置属性
+    shapeData.name = copiedElementData.name;
+    shapeData.width = copiedElementData.width;
+    shapeData.height = copiedElementData.height;
+    shapeData.color = copiedElementData.color;
+    shapeData.x = x;
+    shapeData.y = y;
+    shapeData.rotation = copiedElementData.rotation;
+    shapeData.opacity = copiedElementData.opacity;
+    shapeData.enabled = copiedElementData.enabled;
+    shapeData.zIndex = copiedElementData.zIndex;
+    shapeData.gradient = copiedElementData.gradient;
+    shapeData.gradientType = copiedElementData.gradientType;
+    shapeData.gradientStops = copiedElementData.gradientStops;
+
+    // 更新元素
+    if (shapeData.element) {
+        applyElementPosition(shapeData.element, x, y);
+        applyElementSize(shapeData.element, copiedElementData.width, copiedElementData.height, 'shape');
+        applyShapeStyle(shapeData.element, shapeData);
+
+        // 选中新创建的元素
+        selectShapeElement(shapeData.id);
+    }
+
+    updateWidgetDataViews();
+}
+
+// 粘贴模块元素
+function pasteModuleElement(x, y) {
+    const moduleData = addModuleElement(copiedElementData.type);
+
+    // 设置属性
+    moduleData.name = copiedElementData.name;
+    moduleData.content = copiedElementData.content;
+    moduleData.width = copiedElementData.width;
+    moduleData.height = copiedElementData.height;
+    moduleData.x = x;
+    moduleData.y = y;
+    moduleData.textSize = copiedElementData.textSize;
+    moduleData.textColor = copiedElementData.textColor;
+    moduleData.dateFormat = copiedElementData.dateFormat;
+    moduleData.enabled = copiedElementData.enabled;
+    moduleData.zIndex = copiedElementData.zIndex;
+
+    // 更新元素
+    if (moduleData.element) {
+        applyElementPosition(moduleData.element, x, y);
+        applyElementSize(moduleData.element, copiedElementData.width, copiedElementData.height, 'module');
+        applyModuleStyle(moduleData.element, moduleData);
+
+        // 选中新创建的元素
+        selectModuleElement(moduleData.id);
+    }
+
+    updateWidgetDataViews();
+}
+
+// 粘贴指针时钟元素
+function pasteAnalogClockElement(x, y) {
+    const clockData = addAnalogClockElement();
+
+    // 设置属性
+    clockData.name = copiedElementData.name;
+    clockData.width = copiedElementData.width;
+    clockData.height = copiedElementData.height;
+    clockData.x = x;
+    clockData.y = y;
+    clockData.enabled = copiedElementData.enabled;
+    clockData.zIndex = copiedElementData.zIndex;
+    clockData.dialImage = copiedElementData.dialImage;
+    clockData.hourImage = copiedElementData.hourImage;
+    clockData.minuteImage = copiedElementData.minuteImage;
+    clockData.secondImage = copiedElementData.secondImage;
+    clockData.dialDataUrl = copiedElementData.dialDataUrl;
+    clockData.hourDataUrl = copiedElementData.hourDataUrl;
+    clockData.minuteDataUrl = copiedElementData.minuteDataUrl;
+    clockData.secondDataUrl = copiedElementData.secondDataUrl;
+
+    // 更新元素
+    if (clockData.element) {
+        applyElementPosition(clockData.element, x, y);
+        applyElementSize(clockData.element, copiedElementData.width, copiedElementData.height, 'analog-clock');
+
+        // 更新图片
+        updateClockImageInElement(clockData.element, 'dial',
+            copiedElementData.dialDataUrl || copiedElementData.dialImage);
+        updateClockImageInElement(clockData.element, 'hour',
+            copiedElementData.hourDataUrl || copiedElementData.hourImage);
+        updateClockImageInElement(clockData.element, 'minute',
+            copiedElementData.minuteDataUrl || copiedElementData.minuteImage);
+        updateClockImageInElement(clockData.element, 'second',
+            copiedElementData.secondDataUrl || copiedElementData.secondImage);
+
+        // 选中新创建的元素
+        selectAnalogClockElement(clockData.id);
+    }
+
+    updateWidgetDataViews();
+}
+
+// 删除选中的元素
+function deleteSelectedElement() {
+    if (!selectedElement) {
+        console.warn('没有选中任何元素');
+        return;
+    }
+    const elementType = selectedElement.dataset.type;
+    switch (elementType) {
+        case 'material':
+            deleteMaterial(selectedElement.id);
+            break;
+        case 'text':
+            deleteText(selectedElement.id);
+            break;
+        case 'shape':
+            deleteShape(selectedElement.id);
+            break;
+        case 'module':
+            deleteModule(selectedElement.id);
+            break;
+        case 'analog-clock':
+            deleteAnalogClock(selectedElement.id);
+            break;
+        case 'weather-icon':
+            deleteWeatherIcon(selectedElement.id);
+            break;
+        case 'temperature':
+            deleteTemperature(selectedElement.id);
+            break;
+        default:
+            console.warn('不支持删除该类型元素:', elementType);
+    }
+}
+
+// 初始化渐变编辑器
+function initGradientEditor() {
+    // 初始化默认颜色停止点
+    gradientStops = [
+        { position: 0, color: '#BCEEFD', opacity: 100 },
+        { position: 100, color: '#FFDBDB', opacity: 100 }
+    ];
+
+    // 更新渐变预览
+    updateGradientPreview();
+
+    // 渲染颜色停止点
+    renderGradientStops();
+}
+
+function initShapeGradientEditor() {
+    currentShapeData.gradientStops = [
+        { position: 0, color: '#BCEEFD', opacity: 100 },
+        { position: 100, color: '#FFDBDB', opacity: 100 }
+    ];
+    currentShapeData.gradientType = 'linear';
+    updateShapeGradientPreview();
+    renderShapeGradientStops();
+}
+
+// 更新渐变预览
+function updateGradientPreview() {
+    if (gradientStops.length === 0) {
+        gradientPreview.style.background = 'transparent';
+        return;
+    }
+
+    // 根据渐变类型生成渐变字符串
+    let gradientString = '';
+    const sortedStops = [...gradientStops].sort((a, b) => a.position - b.position);
+
+    switch (currentGradientType) {
+        case 'linear':
+            gradientString = `linear-gradient(to right, ${sortedStops.map(stop =>
+                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
+            ).join(', ')})`;
+            break;
+        case 'radial':
+            gradientString = `radial-gradient(circle, ${sortedStops.map(stop =>
+                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
+            ).join(', ')})`;
+            break;
+    }
+
+    gradientPreview.style.background = gradientString;
+}
+
+function updateShapeGradientPreview() {
+    if (currentShapeData.gradientStops.length === 0) {
+        document.getElementById('shapeGradientPreview').style.background = 'transparent';
+        return;
+    }
+
+    let gradientString = '';
+    const sortedStops = [...currentShapeData.gradientStops].sort((a, b) => a.position - b.position);
+
+    switch (currentShapeData.gradientType) {
+        case 'linear':
+            gradientString = `linear-gradient(to right, ${sortedStops.map(stop =>
+                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
+            ).join(', ')})`;
+            break;
+        case 'radial':
+            gradientString = `radial-gradient(circle, ${sortedStops.map(stop =>
+                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
+            ).join(', ')})`;
+            break;
+    }
+
+    document.getElementById('shapeGradientPreview').style.background = gradientString;
+}
+
+// 十六进制颜色转RGB
+function hexToRgb(hex) {
+    // 移除#号
+    hex = hex.replace('#', '');
+
+    // 解析RGB值
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    return { r, g, b };
+}
+
+// RGB转十六进制
+function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+// 渲染颜色停止点
+function renderGradientStops() {
+    // 清空容器
+    gradientStopsContainer.innerHTML = '';
+
+    // 按位置排序
+    const sortedStops = [...gradientStops].sort((a, b) => a.position - b.position);
+
+    sortedStops.forEach((stop, index) => {
+        const stopElement = document.createElement('div');
+        stopElement.className = 'gradient-stop';
+        stopElement.dataset.position = stop.position;
+        stopElement.dataset.color = stop.color;
+        stopElement.dataset.opacity = stop.opacity;
+
+        // 修复HTML结构
+        stopElement.innerHTML = `
+            <input type="number" class="stop-position" value="${stop.position}" min="0" max="100" step="1" style="width: 70px;">
+            <input type="color" class="stop-color" value="${stop.color}" style="width: 30px;">
+            <input type="text" class="stop-color-value" value="${stop.color}" maxlength="7" style="width: 80px;">
+            <input type="number" class="stop-opacity" value="${stop.opacity}" min="0" max="100" step="1" style="width: 70px;">
+            <button class="stop-remove" style="width: 20px; height: 20px;">×</button>
+        `;
+
+        gradientStopsContainer.appendChild(stopElement);
+    });
+
+    // 添加事件监听器
+    addGradientStopListeners();
+
+    // 更新预览
+    updateGradientPreview();
+}
+
+function renderShapeGradientStops() {
+    const container = document.getElementById('shapeGradientStopsContainer');
+    container.innerHTML = '';
+
+    const sortedStops = [...currentShapeData.gradientStops].sort((a, b) => a.position - b.position);
+
+    sortedStops.forEach((stop, index) => {
+        const stopElement = document.createElement('div');
+        stopElement.className = 'gradient-stop';
+        stopElement.dataset.index = index;
+
+        stopElement.innerHTML = `
+            <input type="number" class="stop-position" value="${stop.position}" min="0" max="100" step="1" style="width: 70px;">
+            <input type="color" class="stop-color" value="${stop.color}" style="width: 30px;">
+            <input type="text" class="stop-color-value" value="${stop.color}" maxlength="7" style="width: 80px;">
+            <input type="number" class="stop-opacity" value="${stop.opacity}" min="0" max="100" step="1" style="width: 70px;">
+            <button class="stop-remove" style="width: 20px; height: 20px;">×</button>
+        `;
+
+        container.appendChild(stopElement);
+    });
+
+    addShapeGradientStopListeners();
+    updateShapeGradientPreview();
+}
+
+// 添加颜色停止点事件监听器
+function addGradientStopListeners() {
+    // 位置输入
+    document.querySelectorAll('.stop-position').forEach(input => {
+        input.addEventListener('input', function () {
+            const stopElement = this.closest('.gradient-stop');
+            if (!stopElement) return;
+
+            // 通过停止点元素的数据属性来查找对应的停止点
+            const position = parseInt(stopElement.dataset.position);
+            const color = stopElement.dataset.color;
+            const opacity = parseInt(stopElement.dataset.opacity);
+
+            const index = gradientStops.findIndex(stop =>
+                stop.position === position && stop.color === color && stop.opacity === opacity
+            );
+
+            if (index !== -1) {
+                gradientStops[index].position = parseInt(this.value) || 0;
+                // 更新停止点元素的数据属性
+                stopElement.dataset.position = this.value;
+                updateGradientPreview();
+            }
+        });
+    });
+
+    // 颜色选择器
+    document.querySelectorAll('.stop-color').forEach(input => {
+        input.addEventListener('input', function () {
+            const stopElement = this.closest('.gradient-stop');
+            if (!stopElement) return;
+
+            // 直接从停止点元素获取数据属性
+            const position = parseInt(stopElement.dataset.position);
+            const color = stopElement.dataset.color;
+            const opacity = parseInt(stopElement.dataset.opacity);
+
+            // 在 gradientStops 数组中查找匹配的停止点
+            const index = gradientStops.findIndex(stop =>
+                stop.position === position &&
+                stop.color === color &&
+                stop.opacity === opacity
+            );
+
+            if (index !== -1) {
+                const colorValue = this.value;
+                gradientStops[index].color = colorValue;
+
+                // 更新停止点元素的数据属性
+                stopElement.dataset.color = colorValue;
+
+                // 更新颜色值输入框
+                const colorValueInput = stopElement.querySelector('.stop-color-value');
+                if (colorValueInput) {
+                    colorValueInput.value = colorValue;
+                }
+
+                // 更新渐变预览
+                updateGradientPreview();
+            }
+        });
+    });
+
+    // 透明度输入
+    document.querySelectorAll('.stop-opacity').forEach(input => {
+        input.addEventListener('input', function () {
+            const stopElement = this.closest('.gradient-stop');
+            if (!stopElement) return;
+
+            const position = parseInt(stopElement.dataset.position);
+            const color = stopElement.dataset.color;
+            const opacity = parseInt(stopElement.dataset.opacity);
+
+            const index = gradientStops.findIndex(stop =>
+                stop.position === position && stop.color === color && stop.opacity === opacity
+            );
+
+            if (index !== -1) {
+                gradientStops[index].opacity = parseInt(this.value) || 0;
+                // 更新停止点元素的数据属性
+                stopElement.dataset.opacity = this.value;
+                updateGradientPreview();
+            }
+        });
+    });
+
+    // 颜色值输入
+    document.querySelectorAll('.stop-color-value').forEach(input => {
+        input.addEventListener('input', function () {
+            const stopElement = this.closest('.gradient-stop');
+            if (!stopElement) return;
+
+            const position = parseInt(stopElement.dataset.position);
+            const color = stopElement.dataset.color;
+            const opacity = parseInt(stopElement.dataset.opacity);
+
+            const index = gradientStops.findIndex(stop =>
+                stop.position === position && stop.color === color && stop.opacity === opacity
+            );
+
+            if (index !== -1) {
+                let color = this.value;
+
+                // 确保有#号
+                if (!color.startsWith('#')) {
+                    color = '#' + color;
+                }
+
+                // 验证十六进制颜色
+                if (/^#[0-9A-F]{6}$/i.test(color)) {
+                    gradientStops[index].color = color.toUpperCase();
+
+                    // 更新停止点元素的数据属性
+                    stopElement.dataset.color = color.toUpperCase();
+
+                    // 更新颜色选择器
+                    const colorPicker = this.parentElement.querySelector('.stop-color-input');
+                    if (colorPicker) {
+                        colorPicker.value = color.toUpperCase();
+                    }
+
+                    updateGradientPreview();
+                }
+            }
+        });
+    });
+
+    // 删除按钮
+    document.querySelectorAll('.stop-remove').forEach(button => {
+        button.addEventListener('click', function () {
+            const stopElement = this.closest('.gradient-stop');
+            if (!stopElement) return;
+
+            // 直接从停止点元素获取数据属性
+            const position = parseInt(stopElement.dataset.position);
+            const color = stopElement.dataset.color;
+            const opacity = parseInt(stopElement.dataset.opacity);
+
+            // 在 gradientStops 数组中查找匹配的停止点
+            const index = gradientStops.findIndex(stop =>
+                stop.position === position &&
+                stop.color === color &&
+                stop.opacity === opacity
+            );
+
+            if (index !== -1 && gradientStops.length > 2) {
+                gradientStops.splice(index, 1);
+                renderGradientStops();
+            } else if (gradientStops.length <= 2) {
+                alert('至少需要两个颜色停止点');
+            }
+        });
+    });
+}
+
+function addShapeGradientStopListeners() {
+    document.querySelectorAll('#shapeGradientStopsContainer .stop-position').forEach((input, index) => {
+        input.addEventListener('input', function () {
+            currentShapeData.gradientStops[index].position = parseInt(this.value) || 0;
+            updateShapeGradientPreview();
+        });
+    });
+
+    document.querySelectorAll('#shapeGradientStopsContainer .stop-color').forEach((input, index) => {
+        input.addEventListener('input', function () {
+            currentShapeData.gradientStops[index].color = this.value;
+            updateShapeGradientPreview();
+        });
+    });
+
+    document.querySelectorAll('#shapeGradientStopsContainer .stop-opacity').forEach((input, index) => {
+        input.addEventListener('input', function () {
+            currentShapeData.gradientStops[index].opacity = parseInt(this.value) || 100;
+            updateShapeGradientPreview();
+        });
+    });
+
+    document.querySelectorAll('#shapeGradientStopsContainer .stop-remove').forEach((button, index) => {
+        button.addEventListener('click', function () {
+            if (currentShapeData.gradientStops.length > 2) {
+                currentShapeData.gradientStops.splice(index, 1);
+                renderShapeGradientStops();
+            } else {
+                alert('至少需要两个颜色停止点');
+            }
+        });
+    });
+}
+// 添加颜色停止点
+function addGradientStop() {
+    if (gradientStops.length >= 10) {
+        alert('最多只能添加10个颜色停止点');
+        return;
+    }
+
+    // 在中间位置添加新停止点
+    const sortedStops = [...gradientStops].sort((a, b) => a.position - b.position);
+    let newPosition = 50;
+
+    if (sortedStops.length > 1) {
+        // 在最大和最小位置之间找一个位置
+        const minPos = sortedStops[0].position;
+        const maxPos = sortedStops[sortedStops.length - 1].position;
+        newPosition = Math.round((minPos + maxPos) / 2);
+    }
+
+    // 生成随机颜色
+    const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+
+    // 添加新停止点
+    gradientStops.push({
+        position: newPosition,
+        color: randomColor,
+        opacity: 100
+    });
+
+    // 渲染更新后的停止点
+    renderGradientStops();
+}
+
+function addShapeGradientStop() {
+    if (currentShapeData.gradientStops.length >= 10) {
+        alert('最多只能添加10个颜色停止点');
+        return;
+    }
+
+    const sortedStops = [...currentShapeData.gradientStops].sort((a, b) => a.position - b.position);
+    let newPosition = 50;
+
+    if (sortedStops.length > 1) {
+        const minPos = sortedStops[0].position;
+        const maxPos = sortedStops[sortedStops.length - 1].position;
+        newPosition = Math.round((minPos + maxPos) / 2);
+    }
+
+    const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+
+    currentShapeData.gradientStops.push({
+        position: newPosition,
+        color: randomColor,
+        opacity: 100
+    });
+
+    renderShapeGradientStops();
+}
+// 应用渐变背景
+function applyGradientBackground() {
+    if (gradientStops.length === 0) {
+        alert('请至少添加一个颜色停止点');
+        return;
+    }
+
+    const sortedStops = [...gradientStops].sort((a, b) => a.position - b.position);
+    let gradientString = '';
+
+    switch (currentGradientType) {
+        case 'linear':
+            gradientString = `linear-gradient(to right, ${sortedStops.map(stop =>
+                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
+            ).join(', ')})`;
+            break;
+        case 'radial':
+            gradientString = `radial-gradient(circle, ${sortedStops.map(stop =>
+                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
+            ).join(', ')})`;
+            break;
+    }
+
+    // 清除其他背景设置
+    currentBackgroundImage = null;
+    widgetContainer.style.backgroundImage = 'none';
+
+    // 设置渐变背景
+    currentGradient = gradientString;
+    widgetContainer.style.background = gradientString;
+    widgetContainer.style.backgroundColor = 'transparent';
+
+    // 重置颜色选择器的值
+    const bgColorInput = document.getElementById('widgetBgColor');
+    const colorPreview = document.querySelector('.color-option.selected');
+    if (colorPreview) {
+        colorPreview.classList.remove('selected');
+    }
+    if (bgColorInput) {
+        bgColorInput.value = '#ffffff'; // 重置为白色
+    }
+
+    updateWidgetDataViews();
+}
+
+function applyShapeGradient() {
+    if (currentShapeData.gradientStops.length === 0) {
+        alert('请至少添加一个颜色停止点');
+        return;
+    }
+
+    const sortedStops = [...currentShapeData.gradientStops].sort((a, b) => a.position - b.position);
+    let gradientString = '';
+
+    switch (currentShapeData.gradientType) {
+        case 'linear':
+            gradientString = `linear-gradient(to right, ${sortedStops.map(stop =>
+                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
+            ).join(', ')})`;
+            break;
+        case 'radial':
+            gradientString = `radial-gradient(circle, ${sortedStops.map(stop =>
+                `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100}) ${stop.position}%`
+            ).join(', ')})`;
+            break;
+    }
+
+    // 更新当前形状数据
+    currentShapeData.gradient = gradientString;
+    currentShapeData.color = ''; // 清除纯色
+
+    // 更新选中的形状元素
+    if (selectedElement && selectedElement.dataset.type === 'shape') {
+        const shapeData = shapeElements.find(s => s.id === currentShapeData.id);
+        if (shapeData) {
+            shapeData.gradient = gradientString;
+            shapeData.gradientType = currentShapeData.gradientType;
+            shapeData.gradientStops = [...currentShapeData.gradientStops];
+            shapeData.color = '';
+
+            // 应用渐变到元素
+            applyShapeGradientToElement(selectedElement, shapeData);
+        }
+    }
+
+    // 更新widgetData
+    updateWidgetDataViews();
+}
+
+function applyShapeGradientToElement(element, shapeData) {
+    // 如果形状没有渐变设置，使用默认值
+    if (!shapeData.gradientStops || shapeData.gradientStops.length === 0) {
+        shapeData.gradientStops = [
+            { position: 0, color: '#6A89CC', opacity: 100 },
+            { position: 100, color: '#2575FC', opacity: 100 }
+        ];
+    }
+    if (shapeData.gradient) {
+        // 创建SVG渐变
+        const svg = element.querySelector('svg');
+        if (svg) {
+            // 清除旧的渐变定义
+            const oldDefs = svg.querySelector('defs');
+            if (oldDefs) oldDefs.remove();
+
+            // 创建新的渐变定义
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            let gradient;
+
+            switch (shapeData.gradientType) {
+                case 'linear':
+                    gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+                    gradient.setAttribute('id', `gradient_${shapeData.id}`);
+                    gradient.setAttribute('x1', '0%');
+                    gradient.setAttribute('y1', '0%');
+                    gradient.setAttribute('x2', '100%');
+                    gradient.setAttribute('y2', '0%');
+                    break;
+                case 'radial':
+                    gradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+                    gradient.setAttribute('id', `gradient_${shapeData.id}`);
+                    gradient.setAttribute('cx', '50%');
+                    gradient.setAttribute('cy', '50%');
+                    gradient.setAttribute('r', '50%');
+                    break;
+                default:
+                    gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+                    gradient.setAttribute('id', `gradient_${shapeData.id}`);
+                    gradient.setAttribute('x1', '0%');
+                    gradient.setAttribute('y1', '0%');
+                    gradient.setAttribute('x2', '100%');
+                    gradient.setAttribute('y2', '0%');
+            }
+
+            // 添加颜色停止点
+            const sortedStops = [...shapeData.gradientStops].sort((a, b) => a.position - b.position);
+            sortedStops.forEach(stop => {
+                const stopElement = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stopElement.setAttribute('offset', `${stop.position}%`);
+                stopElement.setAttribute('stop-color', stop.color);
+                stopElement.setAttribute('stop-opacity', stop.opacity / 100);
+                gradient.appendChild(stopElement);
+            });
+
+            defs.appendChild(gradient);
+            svg.insertBefore(defs, svg.firstChild);
+
+            // 应用渐变到形状
+            const shape = svg.querySelector('path, rect, ellipse');
+            if (shape) {
+                shape.setAttribute('fill', `url(#gradient_${shapeData.id})`);
+            }
+        }
+    } else {
+        // 恢复纯色
+        const svg = element.querySelector('svg');
+        if (svg) {
+            const shape = svg.querySelector('path, rect, ellipse');
+            if (shape) {
+                shape.setAttribute('fill', shapeData.color || '#6a89cc');
+            }
+        }
+    }
+}
+// 清除渐变背景
+function clearGradientBackground() {
+    currentGradient = null;
+    widgetContainer.style.background = document.getElementById('widgetBgColor').value;
+    widgetContainer.style.backgroundColor = document.getElementById('widgetBgColor').value;
+    widgetContainer.style.backgroundImage = 'none';
+    updateWidgetDataViews();
+}
+
+function clearShapeGradient() {
+    currentShapeData.gradient = null;
+    currentShapeData.gradientStops = [
+        { position: 0, color: '#BCEEFD', opacity: 100 },
+        { position: 100, color: '#FFDBDB', opacity: 100 }
+    ];
+
+    // 重置颜色选择器
+    document.getElementById('shapeColor').value = '#6a89cc';
+    currentShapeData.color = '#6a89cc';
+
+    // 更新选中的形状元素
+    if (selectedElement && selectedElement.dataset.type === 'shape') {
+        const shapeData = shapeElements.find(s => s.id === currentShapeData.id);
+        if (shapeData) {
+            shapeData.gradient = null;
+            shapeData.color = '#6a89cc';
+
+            // 恢复纯色到元素
+            const svg = selectedElement.querySelector('svg');
+            if (svg) {
+                const shape = svg.querySelector('path, rect, ellipse');
+                if (shape) {
+                    shape.setAttribute('fill', '#6a89cc');
+                }
+            }
+        }
+    }
+
+    // 重新初始化渐变编辑器
+    initShapeGradientEditor();
+
+    // 更新widgetData
+    updateWidgetDataViews();
+}
+
+// 初始化拖拽功能
+function initDragAndDrop() {
+    // Widget拖拽
+    makeWidgetDraggable();
+
+    // 为widget添加尺寸控制点
+    addResizeHandles(widgetContainer, 'widget');
+}
+
+// 更新辅助线
+function updateGuideLines() {
+    // 清空现有的辅助线
+    guideLines.innerHTML = '';
+
+    if (!guidesVisible) {
+        guideLines.style.display = 'none';
+        return;
+    }
+
+    guideLines.style.display = 'block';
+
+    // 获取网格尺寸
+    const gridSize = getGridSize();
+
+    // 根据不同的模板创建不同的网格
+    if (widgetData.span_x === 4 && widgetData.span_y === 2) {
+        // 4x2模板：60x30个格子
+        createGridLines(gridSize.x, gridSize.y, 60, 30);
+    } else {
+        // 2x2模板：30x30个格子
+        createGridLines(gridSize.x, gridSize.y, 30, 30);
+    }
+}
+
+// 创建网格线
+function createGridLines(spanX, spanY, gridCols, gridRows) {
+    // 创建垂直网格线
+    for (let i = 0; i <= gridCols; i++) {
+        const line = document.createElement('div');
+        line.className = 'guide-line vertical';
+        line.style.left = `${(i / gridCols) * 100}%`;
+        line.style.backgroundColor = currentGuideColor;
+        guideLines.appendChild(line);
+    }
+
+    // 创建水平网格线
+    for (let i = 0; i <= gridRows; i++) {
+        const line = document.createElement('div');
+        line.className = 'guide-line horizontal';
+        line.style.top = `${(i / gridRows) * 100}%`;
+        line.style.backgroundColor = currentGuideColor;
+        guideLines.appendChild(line);
+    }
+}
+
+// 获取当前网格尺寸（格子数）
+function getGridSize() {
+    if (widgetData.span_x === 4 && widgetData.span_y === 2) {
+        return { x: 60, y: 30 };
+    } else {
+        return { x: 30, y: 30 };
+    }
+}
+
+/**
+ * 将网格数量转换为Web端显示的px字号
+ * @param {number} gridSize - 网格数量 (如3表示占用3个格子高度)
+ * @returns {number} - 像素大小
+ */
+function calculateFontSizeFromGrid(gridSize) {
+    const gridInfo = getGridSize();
+    const logicalHeight = gridInfo.y;  // 2x2和4x2的逻辑高度都是30
+
+    // 获取widget容器的实际像素高度
+    const canvasHeightPx = widgetContainer.offsetHeight || 300;
+
+    // 计算缩放比例
+    const scaleFactor = canvasHeightPx / logicalHeight;
+
+    // 返回实际字号 (gridSize × scaleFactor)
+    return gridSize * scaleFactor;
+}
+
+// 格子数转换为像素数（向上取整）
+function gridToPx(gridWidth, gridHeight) {
+    const widgetWidth = widgetContainer.offsetWidth;
+    const widgetHeight = widgetContainer.offsetHeight;
+    const gridSize = getGridSize();
+
+    // 向上取整
+    const gridWidthInt = Math.ceil(gridWidth);
+    const gridHeightInt = Math.ceil(gridHeight);
+
+    const pxWidth = (gridWidthInt / gridSize.x) * widgetWidth;
+    const pxHeight = (gridHeightInt / gridSize.y) * widgetHeight;
+
+    return { pxWidth, pxHeight, gridWidth: gridWidthInt, gridHeight: gridHeightInt };
+}
+
+// 像素数转换为格子数（向上取整）
+function pxToGrid(pxWidth, pxHeight) {
+    const widgetWidth = widgetContainer.offsetWidth;
+    const widgetHeight = widgetContainer.offsetHeight;
+    const gridSize = getGridSize();
+
+    // 向上取整
+    const gridWidth = Math.ceil((pxWidth / widgetWidth) * gridSize.x);
+    const gridHeight = Math.ceil((pxHeight / widgetHeight) * gridSize.y);
+
+    return { gridWidth, gridHeight };
+}
+
 // 应用天气图标样式
 function applyWeatherIconStyle(element, weatherIconData) {
-    element.style.opacity = weatherIconData.opacity / 100;
-    element.style.transform = `rotate(${weatherIconData.rotation}deg)`;
     element.style.zIndex = weatherIconData.zIndex;
     element.style.display = weatherIconData.enabled ? 'flex' : 'none';
 }
@@ -3971,7 +4633,6 @@ function applyTemperatureStyle(element, temperatureData) {
     const fontSizePx = calculateFontSizeFromGrid(temperatureData.textSize);
     element.style.fontSize = `${fontSizePx}px`;
     element.style.color = temperatureData.textColor;
-    element.style.opacity = temperatureData.opacity ? temperatureData.opacity / 100 : 1;
     element.style.zIndex = temperatureData.zIndex;
     element.style.display = temperatureData.enabled ? 'inline-flex' : 'none';
     element.style.justifyContent =
@@ -3987,8 +4648,6 @@ function applyTextStyle(element, textData) {
     const fontSizePx = calculateFontSizeFromGrid(textData.size);
     element.style.fontSize = `${fontSizePx}px`;
     element.style.color = textData.color;
-    element.style.opacity = textData.opacity / 100;
-    element.style.transform = `rotate(${textData.rotation}deg)`;
     element.style.zIndex = textData.zIndex;
     element.style.display = textData.enabled ? 'inline-flex' : 'none';
     // 应用对齐样式
@@ -4182,6 +4841,7 @@ function selectShapeElement(shapeId) {
         selectElement(element, 'shape');
     }
 }
+
 // 选择模块元素
 function selectModuleElement(moduleId) {
     const element = document.getElementById(moduleId);
@@ -4269,8 +4929,6 @@ function updateTextPropertiesPanel(element) {
         currentTextData.color = textData.color;
         currentTextData.x = textData.x;
         currentTextData.y = textData.y;
-        currentTextData.rotation = textData.rotation;
-        currentTextData.opacity = textData.opacity;
         currentTextData.zIndex = textData.zIndex;
 
         // 更新UI
@@ -4283,8 +4941,6 @@ function updateTextPropertiesPanel(element) {
         document.getElementById('textColorHex').value = currentTextData.color.toUpperCase();
         document.getElementById('textX').value = currentTextData.x;
         document.getElementById('textY').value = currentTextData.y;
-        document.getElementById('textRotation').value = currentTextData.rotation;
-        document.getElementById('textOpacity').value = currentTextData.opacity;
         // 更新对齐按钮状态
         updateAlignmentButtons('text', textData.hAlign, textData.vAlign);
     }
@@ -4616,7 +5272,6 @@ function updateClockImageInElement(element, part, imageSrc) {
     }
 }
 
-
 // 更新天气图标属性面板
 function updateWeatherIconPropertiesPanel(element) {
     if (!element) return;
@@ -4635,8 +5290,6 @@ function updateWeatherIconPropertiesPanel(element) {
         currentWeatherIconData.height = gridHeight;
         currentWeatherIconData.x = weatherIconData.x;
         currentWeatherIconData.y = weatherIconData.y;
-        currentWeatherIconData.rotation = weatherIconData.rotation || 0;
-        currentWeatherIconData.opacity = weatherIconData.opacity || 100;
         currentWeatherIconData.zIndex = weatherIconData.zIndex || 10;
         currentWeatherIconData.imageUrl = weatherIconData.imageUrl || './resources/weather.png';
 
@@ -4740,701 +5393,6 @@ function updateAlignmentButtons(panelType, hAlign, vAlign) {
     });
 }
 
-// 应用元素位置（使用格子数）
-function applyElementPosition(element, x, y) {
-    // 将格子数转换为百分比
-    const gridSize = getGridSize();
-    const percentX = (x / gridSize.x) * 100;
-    const percentY = (y / gridSize.y) * 100;
-
-    element.style.left = `${percentX}%`;
-    element.style.top = `${percentY}%`;
-    element.dataset.x = x;
-    element.dataset.y = y;
-}
-
-// 添加尺寸控制点到元素
-function addResizeHandles(element, type) {
-    // 移除已有的控制点
-    removeResizeHandles(element);
-
-    // 八个控制点位置
-    const handles = ['top-left', 'top-center', 'top-right', 'middle-right',
-        'bottom-right', 'bottom-center', 'bottom-left', 'middle-left'];
-
-    handles.forEach(handle => {
-        const resizeHandle = document.createElement('div');
-        resizeHandle.className = `resize-handle ${handle}`;
-        element.appendChild(resizeHandle);
-
-        // 添加拖拽事件
-        makeResizeHandleDraggable(resizeHandle, element, handle, type);
-    });
-}
-
-// 移除尺寸控制点
-function removeResizeHandles(element) {
-    const handles = element.querySelectorAll('.resize-handle');
-    handles.forEach(handle => {
-        handle.remove();
-    });
-}
-
-// 使控制点可拖拽以调整尺寸
-function makeResizeHandleDraggable(handle, element, handleType, elementType) {
-    let isResizing = false;
-    let startX, startY;
-    let startWidth, startHeight;
-    let startLeft, startTop;
-
-    handle.addEventListener('mousedown', startResize);
-    handle.addEventListener('touchstart', startResizeTouch);
-
-    function startResize(e) {
-        e.stopPropagation();
-        isResizing = true;
-
-        // 记录初始状态
-        startX = e.clientX;
-        startY = e.clientY;
-        startWidth = element.offsetWidth;
-        startHeight = element.offsetHeight;
-
-        // 获取元素当前位置
-        const computedStyle = window.getComputedStyle(element);
-        startLeft = parseFloat(computedStyle.left);
-        startTop = parseFloat(computedStyle.top);
-
-        // 添加事件监听器
-        document.addEventListener('mousemove', resize);
-        document.addEventListener('mouseup', stopResize);
-
-        e.preventDefault();
-    }
-
-    function startResizeTouch(e) {
-        if (e.touches.length !== 1) return;
-
-        e.stopPropagation();
-        isResizing = true;
-
-        const touch = e.touches[0];
-        startX = touch.clientX;
-        startY = touch.clientY;
-        startWidth = element.offsetWidth;
-        startHeight = element.offsetHeight;
-
-        const computedStyle = window.getComputedStyle(element);
-        startLeft = parseFloat(computedStyle.left);
-        startTop = parseFloat(computedStyle.top);
-
-        document.addEventListener('touchmove', resizeTouch);
-        document.addEventListener('touchend', stopResizeTouch);
-
-        e.preventDefault();
-    }
-
-    function resize(e) {
-        if (!isResizing) return;
-
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
-
-        applyResize(deltaX, deltaY);
-
-        e.preventDefault();
-    }
-
-    function resizeTouch(e) {
-        if (!isResizing || e.touches.length !== 1) return;
-
-        const touch = e.touches[0];
-        const deltaX = touch.clientX - startX;
-        const deltaY = touch.clientY - startY;
-
-        applyResize(deltaX, deltaY);
-
-        e.preventDefault();
-    }
-
-    function applyResize(deltaX, deltaY) {
-        let newWidth = startWidth;
-        let newHeight = startHeight;
-        let newLeft = startLeft;
-        let newTop = startTop;
-
-        // 根据控制点类型调整尺寸和位置
-        switch (handleType) {
-            case 'top-left':
-                newWidth = Math.max(10, startWidth - deltaX);
-                newHeight = Math.max(10, startHeight - deltaY);
-                newLeft = startLeft + deltaX;
-                newTop = startTop + deltaY;
-                break;
-            case 'top-center':
-                newHeight = Math.max(10, startHeight - deltaY);
-                newTop = startTop + deltaY;
-                break;
-            case 'top-right':
-                newWidth = Math.max(10, startWidth + deltaX);
-                newHeight = Math.max(10, startHeight - deltaY);
-                newTop = startTop + deltaY;
-                break;
-            case 'middle-right':
-                newWidth = Math.max(10, startWidth + deltaX);
-                break;
-            case 'bottom-right':
-                newWidth = Math.max(10, startWidth + deltaX);
-                newHeight = Math.max(10, startHeight + deltaY);
-                break;
-            case 'bottom-center':
-                newHeight = Math.max(10, startHeight + deltaY);
-                break;
-            case 'bottom-left':
-                newWidth = Math.max(10, startWidth - deltaX);
-                newHeight = Math.max(10, startHeight + deltaY);
-                newLeft = startLeft + deltaX;
-                break;
-            case 'middle-left':
-                newWidth = Math.max(10, startWidth - deltaX);
-                newLeft = startLeft + deltaX;
-                break;
-        }
-
-        // 转换为格子数（向上取整）
-        const newGridSize = pxToGrid(newWidth, newHeight);
-
-        // 限制最小格子数为1
-        const gridWidth = Math.max(1, newGridSize.gridWidth);
-        const gridHeight = Math.max(1, newGridSize.gridHeight);
-
-        // 根据格子数重新计算像素尺寸
-        const pixelSize = gridToPx(gridWidth, gridHeight);
-
-        // 应用新尺寸
-        element.style.width = pixelSize.pxWidth + 'px';
-        element.style.height = pixelSize.pxHeight + 'px';
-
-        // 保存格子数
-        element.dataset.gridWidth = pixelSize.gridWidth;
-        element.dataset.gridHeight = pixelSize.gridHeight;
-
-        // 应用新位置（如果需要）
-        if (newLeft !== startLeft) element.style.left = newLeft + 'px';
-        if (newTop !== startTop) element.style.top = newTop + 'px';
-
-        // 更新属性面板
-        if (selectedElement === element) {
-            if (elementType === 'material') {
-                updateMaterialPropertiesPanel(element);
-            } else if (elementType === 'text') {
-                // 对于文字元素，只更新尺寸，不调整字体大小
-                const textData = textElements.find(t => t.id === element.id);
-                if (textData) {
-                    textData.width = pixelSize.gridWidth;
-                    textData.height = pixelSize.gridHeight;
-                    updateTextPropertiesPanel(element);
-                }
-            } else if (elementType === 'shape') {
-                const shapeData = shapeElements.find(s => s.id === element.id);
-                if (shapeData) {
-                    shapeData.width = pixelSize.gridWidth;
-                    shapeData.height = pixelSize.gridHeight;
-                    updateShapePropertiesPanel(element);
-                }
-            } else if (elementType === 'module') {
-                const moduleData = moduleElements.find(m => m.id === element.id);
-                if (moduleData) {
-                    moduleData.width = pixelSize.gridWidth;
-                    moduleData.height = pixelSize.gridHeight;
-                    updateModulePropertiesPanel(element);
-                }
-            } else if (elementType === 'widget') {
-                // 更新widget尺寸数据
-                if (newWidth === 624 && newHeight === 300) {
-                    widgetData.span_x = 4;
-                    widgetData.span_y = 2;
-                    document.getElementById('widgetSize').value = '4x2';
-                    document.querySelector('.template-4x2').classList.add('selected');
-                    document.querySelector('.template-2x2').classList.remove('selected');
-                } else if (newWidth === 300 && newHeight === 300) {
-                    widgetData.span_x = 2;
-                    widgetData.span_y = 2;
-                    document.getElementById('widgetSize').value = '2x2';
-                    document.querySelector('.template-4x2').classList.remove('selected');
-                    document.querySelector('.template-2x2').classList.add('selected');
-                }
-
-                // 更新辅助线
-                updateGuideLines();
-            }
-        }
-    }
-
-    function stopResize() {
-        isResizing = false;
-        document.removeEventListener('mousemove', resize);
-        document.removeEventListener('mouseup', stopResize);
-
-        // 更新widgetData
-        updateWidgetDataViews();
-    }
-
-    function stopResizeTouch() {
-        isResizing = false;
-        document.removeEventListener('touchmove', resizeTouch);
-        document.removeEventListener('touchend', stopResizeTouch);
-
-        // 更新widgetData
-        updateWidgetDataViews();
-    }
-}
-
-// 更新widgetData中的views
-function updateWidgetDataViews() {
-    widgetData.layer = [];// 清空所有layer
-    const gridSize = getGridSize(); // 获取模版尺寸
-
-    widgetData.layer.push({
-        type: "custom_widget",
-        position: {
-            x: 0,
-            y: 0,
-            width: gridSize.x,
-            height: gridSize.y
-        },
-        views: []
-    });
-
-    // 创建自定义文本时钟layer（用于clock、calendar、week模块）
-    let customTextClockLayer = null;
-
-    // 添加背景
-    if (currentBackgroundImage) {
-        // 如果有背景图片
-        widgetData.layer[0].views.push({
-            view_type: "ShapeImageView",
-            bg: "background.png",
-            position: {
-                x: 0,
-                y: 0,
-                width: gridSize.x,
-                height: gridSize.y
-            }
-        });
-    } else {
-        // 如果没有背景图片，使用颜色背景
-        let bgColor = "#FFFFFF"; // 默认白色
-
-        // 获取当前widget的背景颜色
-        const computedStyle = window.getComputedStyle(widgetContainer);
-        const widgetBgColor = computedStyle.backgroundColor ||
-            computedStyle.background ||
-            document.getElementById('widgetBgColor').value;
-
-        // 如果是渐变背景，取第一个颜色或使用默认白色
-        if (currentGradient) {
-            // 如果是渐变背景，使用默认白色或取第一个颜色
-            if (gradientStops.length > 0) {
-                bgColor = gradientStops[0].color;
-            }
-        } else if (widgetBgColor && widgetBgColor !== 'transparent' && widgetBgColor !== 'rgba(0, 0, 0, 0)') {
-            // 如果不是透明色，则使用widget的背景颜色
-            bgColor = widgetBgColor;
-
-            // 如果是rgb/rgba格式，转换为hex
-            if (bgColor.startsWith('rgb')) {
-                // 从rgb或rgba中提取数值
-                const rgb = bgColor.match(/\d+/g);
-                if (rgb && rgb.length >= 3) {
-                    const r = parseInt(rgb[0]);
-                    const g = parseInt(rgb[1]);
-                    const b = parseInt(rgb[2]);
-                    bgColor = rgbToHex(r, g, b);
-                }
-            }
-        }
-
-        // 添加颜色背景视图
-        widgetData.layer[0].views.push({
-            view_type: "ImageView",
-            bg: bgColor, // 使用颜色值
-            position: {
-                x: 0,
-                y: 0,
-                width: gridSize.x,
-                height: gridSize.y
-            }
-        });
-    }
-
-    // 添加所有素材视图
-    uploadedMaterials.forEach(material => {
-        if (material.element) {
-            const element = material.element;
-            const x = parseInt(element.dataset.x) || 0;
-            const y = parseInt(element.dataset.y) || 0;
-            const width = parseInt(element.dataset.gridWidth) || 5;
-            const height = parseInt(element.dataset.gridHeight) || 5;
-
-            widgetData.layer[0].views.push({
-                view_type: "ImageView",
-                bg: material.name,
-                position: {
-                    x: x,
-                    y: y,
-                    width: width,
-                    height: height
-                }
-            });
-        }
-    });
-
-    let index = 1;
-    // 添加所有形状视图
-    shapeElements.forEach(shape => {
-        if (shape.element) {
-            const element = shape.element;
-            const x = parseInt(element.dataset.x) || 0;
-            const y = parseInt(element.dataset.y) || 0;
-            const width = parseInt(element.dataset.gridWidth) || 5;
-            const height = parseInt(element.dataset.gridHeight) || 5;
-            // 生成SVG文件名
-            const svgFileName = `shape_${index}.svg`;
-
-            const shapeView = {
-                view_type: "ShapeSvgView",
-                bg: svgFileName,
-                position: {
-                    x: x,
-                    y: y,
-                    width: width,
-                    height: height
-                }
-            };
-
-            widgetData.layer[0].views.push(shapeView);
-            index++;
-        }
-    });
-
-    // 添加所有模块视图
-    moduleElements.forEach(module => {
-        if (module.element) {
-            const element = module.element;
-            const x = parseInt(element.dataset.x) || 0;
-            const y = parseInt(element.dataset.y) || 0;
-            const width = parseInt(element.dataset.gridWidth) || 9;
-            const height = parseInt(element.dataset.gridHeight) || 5;
-
-            // 根据模块类型创建不同的视图
-            // 检查是否为需要合并到custom_text_clock_1 layer的模块
-            if (module.type === 'clock' || module.type === 'calendar' || module.type === 'week') {
-                // 如果还没有创建custom_text_clock_1 layer，则创建
-                if (!customTextClockLayer) {
-                    customTextClockLayer = {
-                        type: "custom_text_clock_1",
-                        position: {
-                            x: 0,
-                            y: 0,
-                            width: gridSize.x,
-                            height: gridSize.y
-                        },
-                        views: []
-                    };
-                }
-
-                // 根据模块类型创建不同的视图
-                if (module.type === 'clock') {
-                    customTextClockLayer.views.push({
-                        view_type: "TextClock",
-                        text: "HH:mm",
-                        text_size: module.textSize || 3,
-                        text_color: module.textColor || "#000000",
-                        role_color: "on_surface",
-                        position: {
-                            x: x,
-                            y: y,
-                            width: width,
-                            height: height
-                        }
-                    });
-                } else if (module.type === 'calendar') {
-                    customTextClockLayer.views.push({
-                        view_type: "TextClock",
-                        text: module.dateFormat || "MMM dd",
-                        text_color: module.textColor || "#000000",
-                        text_size: module.textSize || 3,
-                        role_color: module.role_color || "on_surface",
-                        position: {
-                            x: x,
-                            y: y,
-                            width: width,
-                            height: height
-                        }
-                    });
-                } else if (module.type === 'week') {
-                    customTextClockLayer.views.push({
-                        view_type: "TextView",
-                        text: module.weekFormat || "MMMM dd'th', 'week'",
-                        text_color: module.textColor || "#000000",
-                        text_size: module.textSize || 3,
-                        role_color: module.role_color || "on_surface",
-                        position: {
-                            x: x,
-                            y: y,
-                            width: width,
-                            height: height
-                        }
-                    });
-                }
-            } else if (module.type === 'battery') {
-                widgetData.layer.push({
-                    type: "battery_widget_1",
-                    position: {
-                        x: 0,
-                        y: 0,
-                        width: gridSize.x,
-                        height: gridSize.y
-                    },
-                    views: [{
-                        view_type: "TextView",
-                        text: "battery_level",
-                        text_color: module.textColor || "#000000",
-                        text_size: module.textSize || 3,
-                        position: {
-                            x: x,
-                            y: y,
-                            width: width,
-                            height: height
-                        }
-                    }]
-                });
-            } else if (module.type === 'countdown') {
-                widgetData.layer.push({
-                    type: "countdown_widget_1",
-                    position: {
-                        x: 0,
-                        y: 0,
-                        width: gridSize.x,
-                        height: gridSize.y
-                    },
-                    views: [{
-                        view_type: "TextView",
-                        text: "countdown_new_year",
-                        text_color: module.textColor || "#000000",
-                        text_size: module.textSize || 3,
-                        position: {
-                            x: x,
-                            y: y,
-                            width: width,
-                            height: height
-                        }
-                    }]
-                });
-            } else if (module.type === 'memory') {
-                widgetData.layer[0].views.push({
-                    view_type: "TextView",
-                    text: "ram_size",
-                    text_color: module.textColor || "#000000",
-                    text_size: module.textSize || 3,
-                    position: {
-                        x: x,
-                        y: y,
-                        width: width,
-                        height: height
-                    }
-                });
-            } else if (module.type === 'today-length') {
-                widgetData.layer[0].views.push({
-                    view_type: "TextView",
-                    text: "today_length",
-                    text_color: module.textColor || "#000000",
-                    text_size: module.textSize || 3,
-                    position: {
-                        x: x,
-                        y: y,
-                        width: width,
-                        height: height
-                    }
-                });
-            }
-        }
-    });
-
-    // 如果存在custom_text_clock_1 layer，则添加到widgetData.layer中
-    if (customTextClockLayer) {
-        widgetData.layer.push(customTextClockLayer);
-    }
-
-    // 添加所有指针时钟视图
-    analogClockElements.forEach(clock => {
-        if (clock.element) {
-            const element = clock.element;
-            const x = parseInt(element.dataset.x) || 0;
-            const y = parseInt(element.dataset.y) || 0;
-            const width = parseInt(element.dataset.gridWidth) || 25;
-            const height = parseInt(element.dataset.gridHeight) || 25;
-
-            widgetData.layer.push({
-                type: "analog_clock_1",
-                position: {
-                    x: x,
-                    y: y,
-                    width: width,
-                    height: height
-                },
-                views: [{
-                    view_id: "dial_1",
-                    bg: "clock_1_dial.png",
-                }, {
-                    view_id: "hour_1",
-                    bg: "clock_1_hour.png",
-                }, {
-                    view_id: "minute_1",
-                    bg: "clock_1_minute.png",
-                }, {
-                    view_id: "second_1",
-                    bg: "clock_1_second.png",
-                }]
-            });
-        }
-    });
-
-    // 将天气图标和温度文本组合成独立的天气模块层
-    weatherIconElements.forEach((weatherIcon, index) => {
-        if (weatherIcon.element) {
-            const element = weatherIcon.element;
-            const x = parseInt(element.dataset.x) || 0;
-            const y = parseInt(element.dataset.y) || 0;
-            const width = parseInt(element.dataset.gridWidth) || 5;
-            const height = parseInt(element.dataset.gridHeight) || 5;
-
-            // 查找对应的温度文本（如果有）
-            const temperature = temperatureElements[index];
-
-            // 创建天气模块层
-            const weatherLayer = {
-                type: "weather_widget_1",
-                position: {
-                    x: 0,
-                    y: 0,
-                    width: gridSize.x,
-                    height: gridSize.y
-                },
-                views: []
-            };
-
-            // 添加天气图标视图
-            weatherLayer.views.push({
-                view_id: "digital_clock_weather",
-                view_type: "ImageView",
-                position: {
-                    x: x,
-                    y: y,
-                    width: width,
-                    height: height
-                }
-            });
-
-            // 如果有对应的温度文本，添加到同一个层
-            if (temperature && temperature.element) {
-                const tempElement = temperature.element;
-                const tempX = parseInt(tempElement.dataset.x) || 0;
-                const tempY = parseInt(tempElement.dataset.y) || 0;
-                const tempWidth = parseInt(tempElement.dataset.gridWidth) || 8;
-                const tempHeight = parseInt(tempElement.dataset.gridHeight) || 4;
-
-                weatherLayer.views.push({
-                    view_id: "digital_clock_temperature",
-                    view_type: "TextView",
-                    text: "N/A",
-                    text_color: temperature.textColor || "#000000",
-                    text_size: temperature.textSize || 3,
-                    role_color: "on_surface",
-                    position: {
-                        x: tempX,
-                        y: tempY,
-                        width: tempWidth,
-                        height: tempHeight
-                    }
-                });
-            }
-
-            // 将天气模块层添加到widgetData中
-            widgetData.layer.push(weatherLayer);
-        }
-    });
-
-    // 单独处理没有对应天气图标的温度文本
-    temperatureElements.forEach((temperature, index) => {
-        // 跳过已经有对应天气图标的温度文本
-        if (index < weatherIconElements.length) return;
-
-        if (temperature && temperature.element) {
-            const tempElement = temperature.element;
-            const tempX = parseInt(tempElement.dataset.x) || 0;
-            const tempY = parseInt(tempElement.dataset.y) || 0;
-            const tempWidth = parseInt(tempElement.dataset.gridWidth) || 8;
-            const tempHeight = parseInt(tempElement.dataset.gridHeight) || 4;
-
-            // 创建独立的温度模块层
-            const temperatureLayer = {
-                type: "weather_widget_1",
-                position: {
-                    x: 0,
-                    y: 0,
-                    width: gridSize.x,
-                    height: gridSize.y
-                },
-                views: [
-                    {
-                        view_id: "digital_clock_temperature",
-                        view_type: "TextView",
-                        text: "N/A",
-                        text_color: temperature.textColor || "#000000",
-                        text_size: temperature.textSize || 3,
-                        role_color: "on_surface",
-                        position: {
-                            x: tempX,
-                            y: tempY,
-                            width: tempWidth,
-                            height: tempHeight
-                        }
-                    }
-                ]
-            };
-
-            // 将温度模块层添加到widgetData中
-            widgetData.layer.push(temperatureLayer);
-        }
-    });
-
-    // 添加所有文字视图
-    textElements.forEach(text => {
-        if (text.element) {
-            const element = text.element;
-            const x = parseInt(element.dataset.x) || 0;
-            const y = parseInt(element.dataset.y) || 0;
-            const width = parseInt(element.dataset.gridWidth) || 8;
-            const height = parseInt(element.dataset.gridHeight) || 4;
-
-            widgetData.layer[0].views.push({
-                view_type: "TextView",
-                text: text.content || "示例文字",
-                text_color: text.color || "#000000",
-                text_size: text.size || 3,
-                position: {
-                    x: x,
-                    y: y,
-                    width: width,
-                    height: height
-                }
-            });
-        }
-    });
-}
-
 // 切换属性面板
 function switchPropertyPanel(panelType) {
     // 隐藏所有面板
@@ -5488,7 +5446,7 @@ function updateWidgetSize(templateType) {
     updateGuideLines();
 
     // 重新应用所有元素的位置
-    document.querySelectorAll('.draggable-element, .text-element, .shape-element, .module-element').forEach(element => {
+    document.querySelectorAll('.draggable-element, .text-element, .shape-element, .module-element, .analog-clock-element, .weather-icon-element, .temperature-element').forEach(element => {
         const x = parseInt(element.dataset.x) || 0;
         const y = parseInt(element.dataset.y) || 0;
         applyElementPosition(element, x, y);
@@ -5553,7 +5511,7 @@ function reinitializeAllElements() {
     }
 }
 
-// 添加重置widget位置到预览区域中心的函数
+// 重置widget位置到预览区域中心
 function resetWidgetPosition() {
     // 移除绝对定位样式，让widget回到预览区域中心
     widgetContainer.style.left = '';
@@ -6289,135 +6247,35 @@ async function generateExportZip() {
 
 // 设置事件监听器
 function setupEventListeners() {
-    // 背景颜色同步
-    const widgetBgColorHex = document.getElementById('widgetBgColorHex');
-    const widgetBgColor = document.getElementById('widgetBgColor');
-    if (widgetBgColorHex && widgetBgColor) {
-        // HEX输入框 -> 颜色选择器
-        widgetBgColorHex.addEventListener('input', function () {
-            const hexValue = this.value;
-            if (isValidHexColor(hexValue)) {
-                widgetBgColor.value = hexToColorPickerFormat(hexValue);
+    // 配置对象形式
+    const colorConfigs = {
+        widgetBgColorHex: 'widgetBgColor',
+        textColorHex: 'textColor',
+        shapeColorHex: 'shapeColor',
+        moduleColorHex: 'moduleTextColor',
+        temperatureColorHex: 'temperatureTextColor'
+    };
 
-                // 触发颜色选择器的input事件以应用颜色
-                const event = new Event('input');
-                widgetBgColor.dispatchEvent(event);
+    // 初始化所有颜色同步
+    Object.entries(colorConfigs).forEach(([hexId, colorId]) => {
+        const hexInput = document.getElementById(hexId);
+        const colorPicker = document.getElementById(colorId);
+
+        if (!hexInput || !colorPicker) return;
+
+        hexInput.addEventListener('input', () => {
+            if (isValidHexColor(hexInput.value)) {
+                colorPicker.value = hexToColorPickerFormat(hexInput.value);
+                colorPicker.dispatchEvent(new Event('input'));
             }
         });
 
-        // 颜色选择器 -> HEX输入框
-        widgetBgColor.addEventListener('input', function () {
-            const colorValue = this.value;
-            widgetBgColorHex.value = colorValue.toUpperCase();
+        colorPicker.addEventListener('input', () => {
+            hexInput.value = colorPicker.value.toUpperCase();
         });
 
-        // 初始同步
-        widgetBgColorHex.value = widgetBgColor.value.toUpperCase();
-    }
-
-    // 文字颜色同步
-    const textColorHex = document.getElementById('textColorHex');
-    const textColor = document.getElementById('textColor');
-    if (textColorHex && textColor) {
-        // HEX输入框 -> 颜色选择器
-        textColorHex.addEventListener('input', function () {
-            const hexValue = this.value;
-            if (isValidHexColor(hexValue)) {
-                textColor.value = hexToColorPickerFormat(hexValue);
-
-                // 触发颜色选择器的input事件以应用颜色
-                const event = new Event('input');
-                textColor.dispatchEvent(event);
-            }
-        });
-
-        // 颜色选择器 -> HEX输入框
-        textColor.addEventListener('input', function () {
-            const colorValue = this.value;
-            textColorHex.value = colorValue.toUpperCase();
-        });
-
-        // 初始同步
-        textColorHex.value = textColor.value.toUpperCase();
-    }
-
-    // 形状颜色同步
-    const shapeColorHex = document.getElementById('shapeColorHex');
-    const shapeColor = document.getElementById('shapeColor');
-    if (shapeColorHex && shapeColor) {
-        // HEX输入框 -> 颜色选择器
-        shapeColorHex.addEventListener('input', function () {
-            const hexValue = this.value;
-            if (isValidHexColor(hexValue)) {
-                shapeColor.value = hexToColorPickerFormat(hexValue);
-
-                // 触发颜色选择器的input事件以应用颜色
-                const event = new Event('input');
-                shapeColor.dispatchEvent(event);
-            }
-        });
-
-        // 颜色选择器 -> HEX输入框
-        shapeColor.addEventListener('input', function () {
-            const colorValue = this.value;
-            shapeColorHex.value = colorValue.toUpperCase();
-        });
-
-        // 初始同步
-        shapeColorHex.value = shapeColor.value.toUpperCase();
-    }
-
-    // 模块文字颜色同步
-    const moduleColorHex = document.getElementById('moduleColorHex');
-    const moduleTextColor = document.getElementById('moduleTextColor');
-    if (moduleColorHex && moduleTextColor) {
-        // HEX输入框 -> 颜色选择器
-        moduleColorHex.addEventListener('input', function () {
-            const hexValue = this.value;
-            if (isValidHexColor(hexValue)) {
-                moduleTextColor.value = hexToColorPickerFormat(hexValue);
-
-                // 触发颜色选择器的input事件以应用颜色
-                const event = new Event('input');
-                moduleTextColor.dispatchEvent(event);
-            }
-        });
-
-        // 颜色选择器 -> HEX输入框
-        moduleTextColor.addEventListener('input', function () {
-            const colorValue = this.value;
-            moduleColorHex.value = colorValue.toUpperCase();
-        });
-
-        // 初始同步
-        moduleColorHex.value = moduleTextColor.value.toUpperCase();
-    }
-
-    // 温度文字颜色同步
-    const temperatureColorHex = document.getElementById('temperatureColorHex');
-    const temperatureTextColor = document.getElementById('temperatureTextColor');
-    if (temperatureColorHex && temperatureTextColor) {
-        // HEX输入框 -> 颜色选择器
-        temperatureColorHex.addEventListener('input', function () {
-            const hexValue = this.value;
-            if (isValidHexColor(hexValue)) {
-                temperatureTextColor.value = hexToColorPickerFormat(hexValue);
-
-                // 触发颜色选择器的input事件以应用颜色
-                const event = new Event('input');
-                temperatureTextColor.dispatchEvent(event);
-            }
-        });
-
-        // 颜色选择器 -> HEX输入框
-        temperatureTextColor.addEventListener('input', function () {
-            const colorValue = this.value;
-            temperatureColorHex.value = colorValue.toUpperCase();
-        });
-
-        // 初始同步
-        temperatureColorHex.value = temperatureTextColor.value.toUpperCase();
-    }
+        hexInput.value = colorPicker.value.toUpperCase();
+    });
 
     // 切换辅助线显示
     document.getElementById('toggleGuides').addEventListener('click', function () {
@@ -6446,6 +6304,10 @@ function setupEventListeners() {
             // 更新Widget尺寸
             const templateType = this.dataset.template;
             updateWidgetSize(templateType);
+
+            // 更新widgetData中的尺寸信息
+            widgetData.span_x = templateType === '4x2' ? 4 : 2;
+            widgetData.span_y = 2;
 
             // 更新辅助线
             updateGuideLines();
@@ -6557,31 +6419,6 @@ function setupEventListeners() {
             reader.readAsDataURL(file);
             this.value = '';
         }
-    });
-
-    // 清除背景图片
-    document.getElementById('clearBackgroundBtn').addEventListener('click', function () {
-        // 清除所有背景设置，恢复默认白色
-        currentBackgroundImage = null;
-        currentGradient = null;
-        widgetContainer.style.backgroundImage = 'none';
-        widgetContainer.style.backgroundColor = '#ffffff';
-        widgetContainer.style.background = '#ffffff';
-
-        // 重置颜色选择器
-        const bgColorInput = document.getElementById('widgetBgColor');
-        const colorPreview = document.querySelector('.color-option.selected');
-        if (colorPreview) {
-            colorPreview.classList.remove('selected');
-        }
-        if (bgColorInput) {
-            bgColorInput.value = '#ffffff';
-        }
-
-        // 选中白色预设
-        document.querySelector('.color-option[data-color="#ffffff"]').classList.add('selected');
-
-        updateWidgetDataViews();
     });
 
     // 渐变类型选择
@@ -6739,6 +6576,24 @@ function setupEventListeners() {
         });
 
         document.querySelectorAll('.module-element').forEach(element => {
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
+            applyElementPosition(element, x, y);
+        });
+
+        document.querySelectorAll('.analog-clock-element').forEach(element => {
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
+            applyElementPosition(element, x, y);
+        });
+
+        document.querySelectorAll('.weather-icon-element').forEach(element => {
+            const x = parseInt(element.dataset.x) || 0;
+            const y = parseInt(element.dataset.y) || 0;
+            applyElementPosition(element, x, y);
+        });
+
+        document.querySelectorAll('.temperature-element').forEach(element => {
             const x = parseInt(element.dataset.x) || 0;
             const y = parseInt(element.dataset.y) || 0;
             applyElementPosition(element, x, y);
@@ -7048,38 +6903,6 @@ function setupEventListeners() {
         }
     });
 
-    document.getElementById('textRotation').addEventListener('input', function () {
-        if (selectedElement && selectedElement.dataset.type === 'text') {
-            const rotation = parseInt(this.value);
-            selectedElement.style.transform = `rotate(${rotation}deg)`;
-
-            // 更新对应的text数据
-            const textData = textElements.find(t => t.id === currentTextData.id);
-            if (textData) {
-                textData.rotation = rotation;
-            }
-
-            currentTextData.rotation = rotation;
-            updateWidgetDataViews();
-        }
-    });
-
-    document.getElementById('textOpacity').addEventListener('input', function () {
-        if (selectedElement && selectedElement.dataset.type === 'text') {
-            const opacity = parseInt(this.value) / 100;
-            selectedElement.style.opacity = opacity;
-
-            // 更新对应的text数据
-            const textData = textElements.find(t => t.id === currentTextData.id);
-            if (textData) {
-                textData.opacity = opacity * 100;
-            }
-
-            currentTextData.opacity = opacity * 100;
-            updateWidgetDataViews();
-        }
-    });
-
     // 形状属性
     document.getElementById('shapeWidth').addEventListener('input', function () {
         if (selectedElement && selectedElement.dataset.type === 'shape') {
@@ -7290,15 +7113,12 @@ function setupEventListeners() {
         if (selectedElement && selectedElement.dataset.type === 'module' &&
             selectedElement.dataset.moduleType === 'calendar') {
             const dateFormat = this.value;
-
             // 更新当前模块数据
             currentModuleData.dateFormat = dateFormat;
-
             // 更新对应的module数据
             const moduleData = moduleElements.find(m => m.id === currentModuleData.id);
             if (moduleData) {
                 moduleData.dateFormat = dateFormat;
-
                 // 更新模块内容显示（预览）
                 const contentElement = selectedElement.querySelector('.text-element-content');
                 if (contentElement) {
@@ -7327,19 +7147,12 @@ function setupEventListeners() {
         if (selectedElement && selectedElement.dataset.type === 'module' &&
             selectedElement.dataset.moduleType === 'week') {
             const weekFormat = this.value;
-
-            // 更新当前模块数据
             currentModuleData.weekFormat = weekFormat;
-
-            // 更新对应的module数据
             const moduleData = moduleElements.find(m => m.id === currentModuleData.id);
             if (moduleData) {
                 moduleData.weekFormat = weekFormat;
-
-                // 更新模块内容显示（预览）
                 const contentElement = selectedElement.querySelector('.text-element-content');
                 if (contentElement) {
-                    // 根据选择的格式生成预览内容
                     let previewContent;
                     switch (weekFormat) {
                         case "MMMM dd'th', 'week'":
@@ -7364,145 +7177,90 @@ function setupEventListeners() {
                             previewContent = "MMMM dd'th', 'week'";
                     }
                     contentElement.textContent = previewContent;
-                    moduleData.content = previewContent; // 更新模块数据中的内容
+                    moduleData.content = previewContent;
                 }
             }
             updateWidgetDataViews();
         }
     });
 
-    // 素材图层控制
-    document.getElementById('bringForwardBtn').addEventListener('click', function () {
-        if (selectedElement && selectedElement.dataset.type === 'material') {
-            const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
-            selectedElement.style.zIndex = currentZIndex + 1;
-            currentMaterialData.zIndex = currentZIndex + 1;
-
-            // 更新对应的material数据
-            const material = uploadedMaterials.find(m => m.id === currentMaterialData.id);
-            if (material) {
-                material.zIndex = currentZIndex + 1;
-            }
-            updateWidgetDataViews();
+    // 定义图层类型和数据映射
+    const layerTypeMap = {
+        material: {
+            dataArray: uploadedMaterials,
+            currentData: currentMaterialData,
+            dataId: currentMaterialData?.id
+        },
+        text: {
+            dataArray: textElements,
+            currentData: currentTextData,
+            dataId: currentTextData?.id
+        },
+        shape: {
+            dataArray: shapeElements,
+            currentData: currentShapeData,
+            dataId: currentShapeData?.id
+        },
+        module: {
+            dataArray: moduleElements,
+            currentData: currentModuleData,
+            dataId: currentModuleData?.id
         }
-    });
+    };
 
-    document.getElementById('sendBackwardBtn').addEventListener('click', function () {
-        if (selectedElement && selectedElement.dataset.type === 'material') {
-            const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
-            if (currentZIndex > 1) {
-                selectedElement.style.zIndex = currentZIndex - 1;
-                currentMaterialData.zIndex = currentZIndex - 1;
+    // 通用图层控制函数
+    function changeLayerZIndex(delta) {
+        if (!selectedElement || !layerTypeMap[selectedElement.dataset.type]) return;
 
-                // 更新对应的material数据
-                const material = uploadedMaterials.find(m => m.id === currentMaterialData.id);
-                if (material) {
-                    material.zIndex = currentZIndex - 1;
-                }
-                updateWidgetDataViews();
-            }
+        const type = selectedElement.dataset.type;
+        const { dataArray, currentData, dataId } = layerTypeMap[type];
+
+        // 获取当前zIndex，默认为10
+        const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
+        const newZIndex = currentZIndex + delta;
+
+        // 防止zIndex小于1（如果不需要限制可以去掉此条件）
+        if (newZIndex < 1) return;
+
+        // 更新DOM元素
+        selectedElement.style.zIndex = newZIndex;
+
+        // 更新当前数据
+        if (currentData) {
+            currentData.zIndex = newZIndex;
         }
-    });
 
-    // 文字图层控制
-    document.getElementById('textBringForwardBtn').addEventListener('click', function () {
-        if (selectedElement && selectedElement.dataset.type === 'text') {
-            const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
-            selectedElement.style.zIndex = currentZIndex + 1;
-
-            // 更新对应的text数据
-            const textData = textElements.find(t => t.id === currentTextData.id);
-            if (textData) {
-                textData.zIndex = currentZIndex + 1;
-            }
-
-            currentTextData.zIndex = currentZIndex + 1;
-            updateWidgetDataViews();
-        }
-    });
-
-    document.getElementById('textSendBackwardBtn').addEventListener('click', function () {
-        if (selectedElement && selectedElement.dataset.type === 'text') {
-            const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
-            if (currentZIndex > 1) {
-                selectedElement.style.zIndex = currentZIndex - 1;
-
-                // 更新对应的text数据
-                const textData = textElements.find(t => t.id === currentTextData.id);
-                if (textData) {
-                    textData.zIndex = currentZIndex - 1;
-                }
-
-                currentTextData.zIndex = currentZIndex - 1;
-                updateWidgetDataViews();
+        // 更新对应的数据数组
+        if (dataArray && dataId) {
+            const elementData = dataArray.find(item => item.id === dataId);
+            if (elementData) {
+                elementData.zIndex = newZIndex;
             }
         }
-    });
 
-    // 形状图层控制
-    document.getElementById('shapeBringForwardBtn').addEventListener('click', function () {
-        if (selectedElement && selectedElement.dataset.type === 'shape') {
-            const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
-            selectedElement.style.zIndex = currentZIndex + 1;
-            currentShapeData.zIndex = currentZIndex + 1;
+        updateWidgetDataViews();
+    }
 
-            // 更新对应的shape数据
-            const shapeData = shapeElements.find(s => s.id === currentShapeData.id);
-            if (shapeData) {
-                shapeData.zIndex = currentZIndex + 1;
+    // 绑定按钮事件（更简洁的方式）
+    const buttonConfigs = [
+        { id: 'bringForwardBtn', type: 'material', delta: 1 },
+        { id: 'sendBackwardBtn', type: 'material', delta: -1 },
+        { id: 'textBringForwardBtn', type: 'text', delta: 1 },
+        { id: 'textSendBackwardBtn', type: 'text', delta: -1 },
+        { id: 'shapeBringForwardBtn', type: 'shape', delta: 1 },
+        { id: 'shapeSendBackwardBtn', type: 'shape', delta: -1 },
+        { id: 'moduleBringForwardBtn', type: 'module', delta: 1 },
+        { id: 'moduleSendBackwardBtn', type: 'module', delta: -1 }
+    ];
+
+    // 批量绑定事件
+    buttonConfigs.forEach(config => {
+        document.getElementById(config.id)?.addEventListener('click', () => {
+            // 确保选中的元素类型匹配
+            if (selectedElement && selectedElement.dataset.type === config.type) {
+                changeLayerZIndex(config.delta);
             }
-            updateWidgetDataViews();
-        }
-    });
-
-    document.getElementById('shapeSendBackwardBtn').addEventListener('click', function () {
-        if (selectedElement && selectedElement.dataset.type === 'shape') {
-            const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
-            if (currentZIndex > 1) {
-                selectedElement.style.zIndex = currentZIndex - 1;
-                currentShapeData.zIndex = currentZIndex - 1;
-
-                // 更新对应的shape数据
-                const shapeData = shapeElements.find(s => s.id === currentShapeData.id);
-                if (shapeData) {
-                    shapeData.zIndex = currentZIndex - 1;
-                }
-                updateWidgetDataViews();
-            }
-        }
-    });
-
-    // 模块图层控制
-    document.getElementById('moduleBringForwardBtn').addEventListener('click', function () {
-        if (selectedElement && selectedElement.dataset.type === 'module') {
-            const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
-            selectedElement.style.zIndex = currentZIndex + 1;
-            currentModuleData.zIndex = currentZIndex + 1;
-
-            // 更新对应的module数据
-            const moduleData = moduleElements.find(m => m.id === currentModuleData.id);
-            if (moduleData) {
-                moduleData.zIndex = currentZIndex + 1;
-            }
-            updateWidgetDataViews();
-        }
-    });
-
-    document.getElementById('moduleSendBackwardBtn').addEventListener('click', function () {
-        if (selectedElement && selectedElement.dataset.type === 'module') {
-            const currentZIndex = parseInt(selectedElement.style.zIndex || 10);
-            if (currentZIndex > 1) {
-                selectedElement.style.zIndex = currentZIndex - 1;
-                currentModuleData.zIndex = currentZIndex - 1;
-
-                // 更新对应的module数据
-                const moduleData = moduleElements.find(m => m.id === currentModuleData.id);
-                if (moduleData) {
-                    moduleData.zIndex = currentZIndex - 1;
-                }
-                updateWidgetDataViews();
-            }
-        }
+        });
     });
 
     // 导出配置按钮
@@ -7511,7 +7269,6 @@ function setupEventListeners() {
         updateWidgetDataViews();
         generateJsonOutput();
         exportModal.style.display = 'flex';
-
         // 更新预览图
         updateConfigPreview();
     });
@@ -7525,7 +7282,6 @@ function setupEventListeners() {
     // 监听配置预览图的格式变化
     document.getElementById('configFormatSelect').addEventListener('change', function () {
         configExportFormat = this.value;
-        // 格式变化不需要重新渲染，只在导出时使用
     });
 
     // 关闭配置模态框
@@ -7554,14 +7310,6 @@ function setupEventListeners() {
             btn.innerHTML = originalText;
             btn.disabled = false;
         });
-    });
-
-
-    // 点击模态框外部关闭
-    exportModal.addEventListener('click', function (e) {
-        if (e.target === exportModal) {
-            exportModal.style.display = 'none';
-        }
     });
 
     // 文字大小事件监听器 - 支持网格数量
@@ -7693,6 +7441,140 @@ function setupEventListeners() {
     });
 }
 
+// 更新配置预览图
+function updateConfigPreview() {
+    const canvas = document.getElementById('configPreviewCanvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+
+    // 根据模板设置预览图尺寸
+    let displayWidth, displayHeight;
+    if (widgetData.span_x === 4 && widgetData.span_y === 2) {
+        displayWidth = 312;  // 4x2 模板
+        displayHeight = 150;
+    } else {
+        displayWidth = 150;  // 2x2 模板
+        displayHeight = 150;
+    }
+
+    // 实际绘制尺寸（根据导出缩放比例）
+    const actualWidth = displayWidth * configExportScale;
+    const actualHeight = displayHeight * configExportScale;
+
+    // 设置canvas的实际像素尺寸
+    canvas.width = actualWidth;
+    canvas.height = actualHeight;
+
+    // 设置canvas的CSS显示尺寸
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${displayHeight}px`;
+
+    // 获取widget容器的实际尺寸（像素）
+    const widgetRect = widgetContainer.getBoundingClientRect();
+    const widgetWidth = widgetRect.width;
+    const widgetHeight = widgetRect.height;
+
+    // 创建临时div来渲染widget
+    const tempDiv = document.createElement('div');
+    tempDiv.style.width = `${widgetWidth}px`;
+    tempDiv.style.height = `${widgetHeight}px`;
+    tempDiv.style.position = 'relative';
+    tempDiv.style.overflow = 'hidden';
+
+    // 克隆widget内容
+    const clone = widgetContainer.cloneNode(true);
+
+    // 移除缩放变换，使用实际尺寸
+    clone.style.width = `${widgetWidth}px`;
+    clone.style.height = `${widgetHeight}px`;
+    clone.style.transform = 'none';
+    clone.style.left = '0';
+    clone.style.top = '0';
+    clone.style.position = 'absolute';
+
+    // 移除控制点和辅助线
+    const resizeHandles = clone.querySelectorAll('.resize-handle');
+    resizeHandles.forEach(handle => handle.remove());
+
+    const guideLines = clone.querySelector('#guideLines');
+    if (guideLines) guideLines.remove();
+
+    // 移除选中状态样式
+    clone.classList.remove('selected');
+
+    // 移除所有元素的选中状态
+    const selectedElements = clone.querySelectorAll('.selected');
+    selectedElements.forEach(el => el.classList.remove('selected'));
+
+    tempDiv.appendChild(clone);
+    document.body.appendChild(tempDiv);
+
+    // 使用html2canvas渲染
+    html2canvas(tempDiv, {
+        width: widgetWidth,
+        height: widgetHeight,
+        scale: configExportScale,
+        backgroundColor: null,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        removeContainer: true
+    }).then(canvas => {
+        // 清除画布
+        ctx.clearRect(0, 0, actualWidth, actualHeight);
+
+        // 绘制白色背景
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, actualWidth, actualHeight);
+
+        // 计算居中位置
+        let drawX = 0;
+        let drawY = 0;
+        let drawWidth = actualWidth;
+        let drawHeight = actualHeight;
+
+        // 计算宽高比
+        const widgetAspect = widgetWidth / widgetHeight;
+        const canvasAspect = actualWidth / actualHeight;
+
+        if (widgetAspect > canvasAspect) {
+            // widget更宽，宽度占满
+            drawHeight = actualWidth / widgetAspect;
+            drawY = (actualHeight - drawHeight) / 2;
+        } else {
+            // widget更高，高度占满
+            drawWidth = actualHeight * widgetAspect;
+            drawX = (actualWidth - drawWidth) / 2;
+        }
+
+        // 绘制widget内容
+        ctx.drawImage(canvas, drawX, drawY, drawWidth, drawHeight);
+
+        // 清理
+        document.body.removeChild(tempDiv);
+
+        // 更新预览图显示
+        const previewContainer = document.getElementById('exportPreview');
+        if (previewContainer) {
+            previewContainer.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL(`image/${configExportFormat}`);
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'contain';
+            previewContainer.appendChild(img);
+        }
+    }).catch(error => {
+        console.error('预览图生成失败:', error);
+        // 显示错误信息
+        const previewContainer = document.getElementById('exportPreview');
+        if (previewContainer) {
+            previewContainer.innerHTML = '<div class="preview-error">预览图生成失败，请重试</div>';
+        }
+    });
+}
+
 // 生成预览图片
 function generatePreviewImage() {
     return new Promise((resolve, reject) => {
@@ -7778,109 +7660,6 @@ function generateJsonOutput() {
                 }
                 return `<span class="${cls}">${match}</span>`;
             });
-}
-
-// 更新配置预览图
-function updateConfigPreview() {
-    const canvas = document.getElementById('configPreviewCanvas');
-    const ctx = canvas.getContext('2d');
-
-    // 固定预览图显示大小
-    const displayWidth = 312;
-    const displayHeight = 150;
-
-    // 实际绘制尺寸（根据导出缩放比例）
-    const actualWidth = displayWidth * configExportScale;
-    const actualHeight = displayHeight * configExportScale;
-
-    // 设置canvas的实际像素尺寸
-    canvas.width = actualWidth;
-    canvas.height = actualHeight;
-
-    // 设置canvas的CSS显示尺寸（固定大小）
-    canvas.style.width = `${displayWidth}px`;
-    canvas.style.height = `${displayHeight}px`;
-
-    // 获取widget容器的状态
-    const tempDiv = document.createElement('div');
-    tempDiv.style.width = `${widgetContainer.offsetWidth}px`;
-    tempDiv.style.height = `${widgetContainer.offsetHeight}px`;
-    tempDiv.style.position = 'relative';
-    tempDiv.style.overflow = 'hidden';
-
-    // 克隆widget内容
-    const clone = widgetContainer.cloneNode(true);
-    clone.style.width = `${widgetContainer.offsetWidth}px`;
-    clone.style.height = `${widgetContainer.offsetHeight}px`;
-    clone.style.position = 'absolute';
-    clone.style.left = '0';
-    clone.style.top = '0';
-    clone.style.transform = 'none'; // 移除缩放变换
-
-    // 移除控制点和辅助线
-    const resizeHandles = clone.querySelectorAll('.resize-handle');
-    resizeHandles.forEach(handle => handle.remove());
-
-    const guideLines = clone.querySelector('#guideLines');
-    if (guideLines) guideLines.remove();
-
-    tempDiv.appendChild(clone);
-    document.body.appendChild(tempDiv);
-
-    // 使用html2canvas渲染
-    html2canvas(tempDiv, {
-        width: widgetContainer.offsetWidth,
-        height: widgetContainer.offsetHeight,
-        scale: configExportScale,
-        backgroundColor: null,
-        removeContainer: true
-    }).then(canvas => {
-        // 计算缩放比例以适应固定预览区域
-        const widgetRatio = widgetContainer.offsetWidth / widgetContainer.offsetHeight;
-        const previewRatio = displayWidth / displayHeight;
-
-        let drawWidth, drawHeight, offsetX, offsetY;
-
-        if (widgetRatio > previewRatio) {
-            // widget更宽，宽度占满
-            drawWidth = actualWidth;
-            drawHeight = actualWidth / widgetRatio;
-            offsetX = 0;
-            offsetY = (actualHeight - drawHeight) / 2;
-        } else {
-            // widget更高，高度占满
-            drawHeight = actualHeight;
-            drawWidth = actualHeight * widgetRatio;
-            offsetX = (actualWidth - drawWidth) / 2;
-            offsetY = 0;
-        }
-
-        // 清除画布
-        ctx.clearRect(0, 0, actualWidth, actualHeight);
-
-        // 绘制背景（白色）
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, actualWidth, actualHeight);
-
-        // 绘制widget内容
-        ctx.drawImage(canvas, offsetX, offsetY, drawWidth, drawHeight);
-
-        // 清理
-        document.body.removeChild(tempDiv);
-
-        // 更新预览图显示
-        exportPreview.innerHTML = '';
-        const img = document.createElement('img');
-        img.src = previewCanvas.toDataURL(`image/${configExportFormat}`);
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'contain';
-        exportPreview.appendChild(img);
-    }).catch(error => {
-        console.error('预览图生成失败:', error);
-        // 显示错误信息
-        exportPreview.innerHTML = '<div class="preview-error">预览图生成失败，请重试</div>';
-    });
 }
 
 // 绘制Widget到Canvas
@@ -8116,25 +7895,15 @@ function drawWidgetToCanvas(ctx, width, height) {
             const elementWidth = (gridWidth / gridSize.x) * width;
             const elementHeight = (gridHeight / gridSize.y) * height;
 
-            // 获取不透明度
-            const opacity = 1;
-
             // 保存上下文状态
             ctx.save();
-
-            // 设置不透明度
-            ctx.globalAlpha = opacity;
 
             // 设置文字样式
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
             // 设置颜色
-            if (module.type === 'clock' || module.type === 'calendar' || module.type === 'week') {
-                ctx.fillStyle = module.textColor || "#000000";
-            } else {
-                ctx.fillStyle = module.textColor || "#000000";
-            }
+            ctx.fillStyle = module.textColor || "#000000";
 
             // 计算文字位置
             const textX = x + elementWidth / 2;
@@ -8150,43 +7919,6 @@ function drawWidgetToCanvas(ctx, width, height) {
 
     // 绘制所有文字
     textElements.forEach(text => {
-        if (shape.gradient && shape.gradient.stops && shape.gradient.stops.length > 0) {
-            // 创建渐变
-            let gradient;
-            switch (shape.gradient.type || 'linear') {
-                case 'linear':
-                    gradient = ctx.createLinearGradient(
-                        x, y,
-                        x + elementWidth, y
-                    );
-                    break;
-                case 'radial':
-                    gradient = ctx.createRadialGradient(
-                        x + elementWidth / 2, y + elementHeight / 2, 0,
-                        x + elementWidth / 2, y + elementHeight / 2, Math.max(elementWidth, elementHeight) / 2
-                    );
-                    break;
-                default:
-                    gradient = ctx.createLinearGradient(
-                        x, y,
-                        x + elementWidth, y
-                    );
-            }
-
-            // 添加颜色停止点
-            const sortedStops = [...shape.gradient.stops].sort((a, b) => a.position - b.position);
-            sortedStops.forEach(stop => {
-                gradient.addColorStop(
-                    stop.position / 100,
-                    `rgba(${hexToRgb(stop.color).r}, ${hexToRgb(stop.color).g}, ${hexToRgb(stop.color).b}, ${stop.opacity / 100})`
-                );
-            });
-
-            ctx.fillStyle = gradient;
-        } else {
-            // 使用纯色
-            ctx.fillStyle = shape.color;
-        }
         if (text.element && text.element.style.display !== 'none') {
             const element = text.element;
             const gridSize = getGridSize();
@@ -8199,21 +7931,8 @@ function drawWidgetToCanvas(ctx, width, height) {
             const gridWidth = parseInt(element.dataset.gridWidth) || 8;
             const elementWidth = (gridWidth / gridSize.x) * width;
 
-            // 获取旋转角度
-            const rotation = text.rotation;
-
-            // 获取不透明度
-            const opacity = text.opacity / 100;
-
             // 保存上下文状态
             ctx.save();
-
-            // 设置不透明度
-            ctx.globalAlpha = opacity;
-
-            // 设置旋转中心并旋转
-            ctx.translate(x, y);
-            ctx.rotate(rotation * Math.PI / 180);
 
             // 设置文字样式
             ctx.fillStyle = text.color;

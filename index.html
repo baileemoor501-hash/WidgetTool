@@ -390,7 +390,7 @@
                         </div>
 
                         <!-- 导入背景图片 -->
-                        <div class="background-upload" id="backgroundUploadContainer">
+                        <div class="background-upload" id="backgroundUploadContainer" style="margin-bottom: 5px;">
                             <div class="background-upload-btn">
                                 <i class="fas fa-image"></i> 导入背景图片
                             </div>
@@ -398,14 +398,8 @@
                                 style="display: none;">
                         </div>
 
-                        <div class="property-row">
-                            <button class="btn btn-small btn-secondary" id="clearBackgroundBtn">
-                                <i class="fas fa-times"></i> 清除背景图片
-                            </button>
-                        </div>
-
                         <!-- 纯色背景 -->
-                        <div class="property-row">
+                        <div class="property-row" style="margin-bottom: 5px;">
                             <span class="property-label">背景颜色</span>
                             <input type="text" id="widgetBgColorHex" style="width: 80px;height: 26px;" value="#FFFFFF">
                             <input type="color" id="widgetBgColor" value="#ffffff">
@@ -587,14 +581,6 @@
                         <div class="property-row">
                             <span class="property-label">Y位置(格子)</span>
                             <input type="number" id="textY" min="0" max="30" value="15" step="1">
-                        </div>
-                        <div class="property-row">
-                            <span class="property-label">旋转角度</span>
-                            <input type="range" id="textRotation" min="0" max="360" value="0">
-                        </div>
-                        <div class="property-row">
-                            <span class="property-label">不透明度</span>
-                            <input type="range" id="textOpacity" min="0" max="100" value="100">
                         </div>
                         <div class="layer-controls">
                             <button class="btn btn-small btn-secondary" id="textBringForwardBtn">
@@ -1045,8 +1031,8 @@
                         <div class="section-title" style="margin-bottom: 10px;">
                             <i class="fas fa-image"></i> 预览图
                         </div>
-                        <div class="export-preview" id="configPreview">
-                            <canvas id="configPreviewCanvas"></canvas>
+                        <div class="export-preview" id="configPreview" style="text-align: center;">
+                            <canvas id="configPreviewCanvas" style="border-radius: 20px;"></canvas>
                         </div>
                     </div>
 
@@ -1057,12 +1043,12 @@
                                 <i class="fas fa-expand-alt"></i> 分辨率
                             </div>
                             <select id="configResolutionSelect" class="dropdown-select">
-                                <option value="0.5">0.5x (312×150)</option>
-                                <option value="0.75">0.75x (468×225)</option>
-                                <option value="1" selected>1.0x (624×300)</option>
-                                <option value="1.5">1.5x (936×450)</option>
-                                <option value="2">2.0x (1248×600)</option>
-                                <option value="3">3.0x (1872×900)</option>
+                                <option value="0.5">0.5x</option>
+                                <option value="0.75">0.75x</option>
+                                <option value="1" selected>1.0x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2.0x</option>
+                                <option value="3">3.0x</option>
                             </select>
                         </div>
 
