@@ -211,7 +211,6 @@ const exportPreview = document.getElementById('exportPreview');
 const gradientStopsContainer = document.getElementById('gradientStopsContainer');
 const gradientPreview = document.getElementById('gradientPreview');
 
-
 // 初始化函数
 function init() {
     // 初始化右键菜单
@@ -318,6 +317,340 @@ function init() {
 
     // 初始选中widget
     selectWidget();
+
+    // 添加素材库按钮点击事件
+    setupMaterialLibrary();
+}
+
+// 设置素材库功能
+function setupMaterialLibrary() {
+    const openBtn = document.getElementById('openMaterialLibraryBtn');
+    const modal = document.getElementById('materialLibraryModal');
+
+    if (!openBtn || !modal) return;
+
+    // 打开模态框
+    openBtn.addEventListener('click', function () {
+        modal.style.display = 'flex';
+        loadMaterialLibrary();
+    });
+
+    // 关闭模态框
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal || e.target.classList.contains('close-modal')) {
+            modal.style.display = 'none';
+        }
+    });
+
+    // 阻止模态框内容点击关闭
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    }
+}
+
+// 加载素材库
+async function loadMaterialLibrary() {
+    const modalContent = document.querySelector('.material-library-modal');
+    if (!modalContent) return;
+
+    // 清空现有内容（除了标题）
+    const modalBody = modalContent.querySelector('.modal-body') || createModalBody(modalContent);
+    modalBody.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> 正在加载素材库...</div>';
+
+    try {
+        // 获取ZIP包
+        const response = await fetch('https://nati.oss-cn-hangzhou.aliyuncs.com/apk_logo_xct/server_resource_update/test/zhangyuan_test/material.zip');
+        if (!response.ok) throw new Error('无法获取素材库');
+
+        const arrayBuffer = await response.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+
+        // 清空加载提示
+        modalBody.innerHTML = '';
+
+        // 创建图片容器
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'material-library-grid';
+
+        // 遍历ZIP文件
+        const imagePromises = [];
+        let imageCount = 0;
+
+        zip.forEach(async (relativePath, zipEntry) => {
+            // 只处理图片文件
+            if (!zipEntry.dir && /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(relativePath)) {
+                imageCount++;
+
+                const fileData = await zipEntry.async('blob');
+                const reader = new FileReader();
+
+                const promise = new Promise((resolve) => {
+                    reader.onload = function (e) {
+                        // 创建素材项
+                        const materialItem = createMaterialLibraryItem(
+                            relativePath,
+                            e.target.result,
+                            fileData.type
+                        );
+                        gridContainer.appendChild(materialItem);
+                        resolve();
+                    };
+                    reader.readAsDataURL(fileData);
+                });
+
+                imagePromises.push(promise);
+            }
+        });
+
+        // 等待所有图片加载完成
+        await Promise.all(imagePromises);
+
+        // 如果没有图片
+        if (imageCount === 0) {
+            modalBody.innerHTML = '<div class="no-materials"><i class="fas fa-image"></i><p>素材库为空</p></div>';
+        } else {
+            modalBody.appendChild(gridContainer);
+
+            // 添加标题显示素材数量
+            const modalTitle = modalContent.querySelector('.modal-title');
+            if (modalTitle) {
+                modalTitle.innerHTML = `<i class="fas fa-box-open"></i> 素材库 (${imageCount}个素材)`;
+            }
+        }
+
+    } catch (error) {
+        console.error('加载素材库失败:', error);
+        modalBody.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>加载素材库失败: ${error.message}</p>
+                <button onclick="loadMaterialLibrary()" class="retry-btn">
+                    <i class="fas fa-redo"></i> 重新加载
+                </button>
+            </div>
+        `;
+    }
+}
+
+// 创建模态框内容区域
+function createModalBody(modalContent) {
+    const modalBody = document.createElement('div');
+    modalBody.className = 'modal-body';
+    modalContent.appendChild(modalBody);
+    return modalBody;
+}
+
+// 创建素材库项目
+function createMaterialLibraryItem(fileName, dataUrl, mimeType) {
+    const item = document.createElement('div');
+    item.className = 'material-library-item';
+
+    // 创建缩略图
+    const thumbnail = document.createElement('div');
+    thumbnail.className = 'material-library-thumbnail';
+
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    img.alt = fileName;
+    img.loading = 'lazy';
+
+    // 图片加载完成后再添加到DOM
+    img.onload = function () {
+        thumbnail.appendChild(img);
+    };
+
+    // 创建文件名
+    const name = document.createElement('div');
+    name.className = 'material-library-name';
+    name.textContent = getShortFileName(fileName);
+
+    // 创建操作按钮
+    const actions = document.createElement('div');
+    actions.className = 'material-library-actions';
+
+    // 添加按钮
+    const addBtn = document.createElement('button');
+    addBtn.className = 'material-library-add-btn';
+    addBtn.innerHTML = '<i class="fas fa-plus"></i> 添加';
+    addBtn.title = '添加到编辑器';
+
+    addBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        addMaterialFromLibrary(dataUrl, fileName);
+    });
+
+    // 预览按钮
+    const previewBtn = document.createElement('button');
+    previewBtn.className = 'material-library-preview-btn';
+    previewBtn.innerHTML = '<i class="fas fa-search"></i>';
+    previewBtn.title = '预览';
+
+    previewBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        showMaterialPreview(dataUrl, fileName);
+    });
+
+    actions.appendChild(addBtn);
+    actions.appendChild(previewBtn);
+
+    // 添加点击预览功能
+    thumbnail.addEventListener('click', function () {
+        showMaterialPreview(dataUrl, fileName);
+    });
+
+    item.appendChild(thumbnail);
+    item.appendChild(name);
+    item.appendChild(actions);
+
+    return item;
+}
+
+// 添加素材到编辑器
+function addMaterialFromLibrary(dataUrl, fileName) {
+    // 创建一个File对象
+    const base64Data = dataUrl.split(',')[1];
+    const mimeType = dataUrl.match(/^data:(.*);base64,/)[1];
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: mimeType });
+
+    // 提取文件名（去掉路径）
+    const shortName = fileName.split('/').pop().split('\\').pop();
+
+    const file = new File([blob], shortName, { type: mimeType });
+
+    // 处理上传
+    handleMaterialUpload(file).then(() => {
+        // 关闭模态框
+        const modal = document.getElementById('materialLibraryModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+
+        // 显示成功消息
+        showNotification(`已添加素材: ${shortName}`, 'success');
+    });
+}
+
+// 显示素材预览
+function showMaterialPreview(dataUrl, fileName) {
+    // 创建预览模态框
+    let previewModal = document.getElementById('materialPreviewModal');
+
+    if (!previewModal) {
+        previewModal = document.createElement('div');
+        previewModal.id = 'materialPreviewModal';
+        previewModal.className = 'modal';
+        previewModal.innerHTML = `
+            <div class="modal-content material-preview-modal">
+                <div class="modal-header">
+                    <h3 class="modal-title"><i class="fas fa-search"></i> 预览素材</h3>
+                    <span class="close-modal"><i class="fas fa-times"></i></span>
+                </div>
+                <div class="modal-body">
+                    <div class="material-preview-container">
+                        <img class="material-preview-image" src="${dataUrl}" alt="${fileName}">
+                    </div>
+                    <div class="material-preview-info">
+                        <p><strong>文件名:</strong> ${fileName}</p>
+                        <p><strong>尺寸:</strong> <span class="image-dimensions">计算中...</span></p>
+                    </div>
+                    <div class="material-preview-actions">
+                        <button class="btn-primary add-from-preview">
+                            <i class="fas fa-plus"></i> 添加到编辑器
+                        </button>
+                        <button class="btn-secondary close-preview">
+                            <i class="fas fa-times"></i> 关闭
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(previewModal);
+
+        // 绑定事件
+        previewModal.addEventListener('click', function (e) {
+            if (e.target === previewModal || e.target.closest('.close-modal') || e.target.closest('.close-preview')) {
+                previewModal.style.display = 'none';
+            }
+        });
+
+        const addBtn = previewModal.querySelector('.add-from-preview');
+        if (addBtn) {
+            addBtn.addEventListener('click', function () {
+                addMaterialFromLibrary(dataUrl, fileName);
+                previewModal.style.display = 'none';
+            });
+        }
+
+        // 计算图片尺寸
+        const img = previewModal.querySelector('.material-preview-image');
+        const dimensionsSpan = previewModal.querySelector('.image-dimensions');
+
+        img.onload = function () {
+            dimensionsSpan.textContent = `${img.naturalWidth} × ${img.naturalHeight} 像素`;
+        };
+    } else {
+        // 更新现有模态框
+        const img = previewModal.querySelector('.material-preview-image');
+        const dimensionsSpan = previewModal.querySelector('.image-dimensions');
+
+        img.src = dataUrl;
+        img.alt = fileName;
+        dimensionsSpan.textContent = '计算中...';
+
+        img.onload = function () {
+            dimensionsSpan.textContent = `${img.naturalWidth} × ${img.naturalHeight} 像素`;
+        };
+    }
+
+    previewModal.style.display = 'flex';
+}
+
+// 获取短文件名
+function getShortFileName(fileName) {
+    const name = fileName.split('/').pop().split('\\').pop();
+    if (name.length > 20) {
+        return name.substring(0, 17) + '...';
+    }
+    return name;
+}
+
+// 显示通知
+function showNotification(message, type = 'info') {
+    // 创建通知元素
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+
+    document.body.appendChild(notification);
+
+    // 显示通知
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+
+    // 3秒后隐藏并移除
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
 }
 
 // 加载默认时钟图片并转换为base64
@@ -2981,10 +3314,10 @@ function addModuleElement(type) {
         element: null,
         textSize: 3,
         textColor: "#000000",
-        dateFormat: "MMM dd", 
-        weekFormat: "MMMM dd'th', 'week'", 
-        hAlign: "center", 
-        vAlign: "center",  
+        dateFormat: "MMM dd",
+        weekFormat: "MMMM dd'th', 'week'",
+        hAlign: "center",
+        vAlign: "center",
         role_color: "on_surface",
         text_font: "Birthstone-Regular.ttf"
     };
@@ -4902,7 +5235,7 @@ function updateWidgetDataViews() {
                         views: []
                     };
                 }
-                
+
                 // 根据模块类型创建不同的视图
                 if (module.type === 'clock') {
                     customTextClockLayer.views.push({
